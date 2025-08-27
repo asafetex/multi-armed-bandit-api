@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Multi-Armed Bandit Dashboard</title>
+  <style>
+    :root {
+      --bg: #f7f7f7;
+      --card: #fff;
+      --text: #2c3e50;
+      --accent: #2980b9;
+      --border: #e3eaf2;
+      --input: #f0f4f8;
+      --error: #c0392b;
+      --success: #27ae60;
+      --shadow: 0 2px 8px #0001;
+      --transition: 0.2s;
+      --selected: #ffeaa7;
+    }
+    [data-theme="dark"] {
+      --bg: #181c23;
+      --card: #232a36;
+      --text: #f7f7f7;
+      --accent: #27ae60;
+      --border: #232a36;
+      --input: #232a36;
+      --error: #e74c3c;
+      --success: #2ecc71;
+      --shadow: 0 2px 12px #0008;
+      --selected: #2d3436;
+    }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); margin: 0; padding: 0; color: var(--text); transition: background var(--transition), color var(--transition);}
+    .container { max-width: 1100px; margin: 30px auto; background: var(--card); border-radius: 12px; box-shadow: var(--shadow); padding: 36px 36px 24px 36px; }
+    h1 { text-align: center; color: var(--accent); letter-spacing: 1px; }
+    .section { margin-bottom: 32px; }
+    .flex { display: flex; gap: 32px; flex-wrap: wrap; }
+    .card { background: var(--input); border-radius: 10px; padding: 18px 28px; flex: 1; min-width: 260px; box-shadow: 0 1px 4px #0002; }
+    .chart { width: 320px; height: 320px; margin: 0 auto; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; border-radius: 8px; overflow: hidden;}
+    th, td { padding: 10px 14px; border-bottom: 1px solid var(--border); text-align: center; }
+    th { background: var(--border); }
+    .error { color: var(--error); font-weight: bold; }
+    .success { color: var(--success); font-weight: bold; }
+    label { font-weight: bold; }
+    input, select, textarea { padding: 7px 12px; margin: 0 8px 0 0; border-radius: 5px; border: 1px solid #ccc; background: var(--card); color: var(--text); transition: border var(--transition);}
+    input:focus, select:focus, textarea:focus { border: 1.5px solid var(--accent);}
+    button { padding: 9px 20px; border: none; border-radius: 5px; background: var(--accent); color: #fff; font-weight: bold; cursor: pointer; transition: background var(--transition);}
+    button:hover { background: #1c5d85; }
+    .theme-toggle { float: right; margin-top: -40px; font-size: 22px; background: none; color: var(--accent);}
+    .api-form { margin-bottom: 18px; background: var(--input); border-radius: 8px; padding: 16px 18px; box-shadow: 0 1px 4px #0001;}
+    textarea { width: 100%; min-height: 60px; }
+    .api-form label { display: block; margin-top: 8px; }
+    .api-form input[type="number"], .api-form input[type="text"] { width: 120px; }
+    .api-form .inline { display: inline-block; margin-right: 12px; }
+    .api-form .variants-list { margin-top: 8px; }
+    .api-form .variants-list input { width: 80px; }
+    .api-form .variants-list button { padding: 2px 8px; font-size: 12px; }
+    .api-form .variants-list .variant-row { margin-bottom: 4px; }
+    .file-upload { margin-top: 10px; }
+    .file-upload label { font-weight: normal; }
+    .file-upload input[type="file"] { margin-left: 8px; }
+    .file-upload .file-info { font-size: 13px; color: var(--accent); margin-left: 8px;}
+    .file-upload .error { font-size: 13px;}
+    .fade-in { animation: fadeIn 0.5s; }
+    .history-filters { margin-bottom: 10px; }
+    .history-filters label { font-weight: normal; margin-right: 8px;}
+    .variant-filter-btn {
+      display: inline-block;
+      margin: 0 6px 6px 0;
+      padding: 5px 14px;
+      border-radius: 16px;
+      border: 1.5px solid var(--accent);
+      background: var(--card);
+      color: var(--accent);
+      font-weight: bold;
+      cursor: pointer;
+      transition: background var(--transition), color var(--transition);
+    }
+    .variant-filter-btn.selected {
+      background: var(--selected);
+      color: var(--text);
+      border: 2px solid var(--accent);
+    }
+    .multi-id-list { margin-bottom: 8px; }
+    .multi-id-list input { width: 80px; margin-right: 4px;}
+    .multi-id-list button { padding: 2px 8px; font-size: 12px; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  </style>
+</head>
+<body>
+  <div class="container" id="container">
+    <button class="theme-toggle" onclick="toggleTheme()" title="Alternar tema">🌙/☀️</button>
+    <h1>Multi-Armed Bandit Dashboard</h1>
+    <div class="section">
+      <form id="exp-form" class="api-form">
+        <h2>Criar Experimento</h2>
+        <label>Nome: <input type="text" id="exp-name" required /></label>
+        <label>Descrição: <input type="text" id="exp-desc" /></label>
+        <button type="submit">Criar Experimento</button>
+        <span id="exp-msg"></span>
+      </form>
+      <form id="event-form" class="api-form">
+        <h2>Enviar Evento</h2>
+        <label>ID do Experimento: <input type="number" id="event-exp-id" min="1" required /></label>
+        <label>Data: <input type="date" id="event-date" required /></label>
+        <div class="variants-list" id="variants-list">
+          <h3>Variantes</h3>
+        </div>
+        <button type="button" onclick="addVariant()">Adicionar Variante</button>
+        <button type="submit">Enviar Evento</button>
+        <span id="event-msg"></span>
+        <div class="file-upload">
+          <label>Ou envie um arquivo JSON de eventos: <input type="file" id="event-file" accept=".json" /></label>
+          <span class="file-info" id="file-info"></span>
+        </div>
+      </form>
+      <form id="alloc-form" class="api-form">
+        <h2>Obter Alocação</h2>
+        <div class="multi-id-list" id="alloc-id-list"></div>
+        <button type="button" onclick="addAllocId()">Adicionar Experimento</button>
+        <label>Janela (dias): <input type="number" id="alloc-window" value="14" min="1" max="365" required /></label>
+        <button type="submit">Buscar Alocação</button>
+        <span id="alloc-msg"></span>
+      </form>
+      <form id="history-form" class="api-form">
+        <h2>Histórico de Alocações</h2>
+        <div class="history-filters">
+          <div class="multi-id-list" id="history-id-list"></div>
+          <button type="button" onclick="addHistoryId()">Adicionar Experimento</button>
+          <label>Data Inicial: <input type="date" id="history-start-date" /></label>
+          <label>Data Final: <input type="date" id="history-end-date" /></label>
+        </div>
+        <div id="variant-filters"></div>
+        <button type="submit">Buscar Histórico</button>
+        <span id="history-msg"></span>
+      </form>
+    </div>
+    <div class="section flex">
+      <div class="card fade-in">
+        <h2>Alocação Recomendada</h2>
+        <canvas id="pie" class="chart"></canvas>
+        <div id="allocations"></div>
+      </div>
+      <div class="card fade-in">
+        <h2>Parâmetros do Algoritmo</h2>
+        <ul id="params"></ul>
+        <h3>Resumo</h3>
+        <div id="summary"></div>
+      </div>
+    </div>
+    <div class="section">
+      <h2>Histórico de Alocações</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Experimento</th>
+            <th>Data</th>
+            <th>Alocação</th>
+            <th>Impressões</th>
+            <th>Cliques</th>
+          </tr>
+        </thead>
+        <tbody id="history"></tbody>
+      </table>
+    </div>
+  </div>
+  <script>
+    // THEME
+    function toggleTheme() {
+      const html = document.documentElement;
+      if (html.getAttribute('data-theme') === 'dark') {
+        html.removeAttribute('data-theme');
+        localStorage.setItem('theme', 'light');
+      } else {
+        html.setAttribute('data-theme', 'dark');
+        localStorage.setItem('theme', 'dark');
+      }
+    }
+    if (localStorage.getItem('theme') === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+
+    // MULTI-ID FIELDS
+    function addAllocId(val = '') {
+      const list = document.getElementById('alloc-id-list');
+      const row = document.createElement('span');
+      row.innerHTML = `<input type="number" min="1" value="${val}" required /> <button type="button" onclick="this.parentNode.remove()">Remover</button>`;
+      list.appendChild(row);
+    }
+    function addHistoryId(val = '') {
+      const list = document.getElementById('history-id-list');
+      const row = document.createElement('span');
+      row.innerHTML = `<input type="number" min="1" value="${val}" required /> <button type="button" onclick="this.parentNode.remove()">Remover</button>`;
+      list.appendChild(row);
+    }
+    // Adiciona 1 campo por padrão
+    window.onload = () => {
+      if (document.getElementById('variants-list').children.length === 0) {
+        addVariant('control', 1000, 70);
+        addVariant('variant_b', 1000, 95);
+      }
+      if (document.getElementById('alloc-id-list').children.length === 0) addAllocId(1);
+      if (document.getElementById('history-id-list').children.length === 0) addHistoryId(1);
+    };
+
+    // VARIANT FIELDS
+    function addVariant(name = '', impressions = '', clicks = '') {
+      const list = document.getElementById('variants-list');
+      const row = document.createElement('div');
+      row.className = 'variant-row';
+      row.innerHTML = `
+        <input type="text" placeholder="Nome" value="${name}" required />
+        <input type="number" placeholder="Impressões" value="${impressions}" min="0" required />
+        <input type="number" placeholder="Cliques" value="${clicks}" min="0" required />
+        <button type="button" onclick="this.parentNode.remove()">Remover</button>
+      `;
+      list.appendChild(row);
+    }
+
+    // EXPERIMENT
+    document.getElementById('exp-form').onsubmit = async e => {
+      e.preventDefault();
+      const name = document.getElementById('exp-name').value;
+      const desc = document.getElementById('exp-desc').value;
+      const msg = document.getElementById('exp-msg');
+      msg.textContent = '';
+      try {
+        const res = await fetch('http://localhost:8000/experiments', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, description: desc })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          msg.innerHTML = `<span class="success">Experimento criado! ID: ${data.id}</span>`;
+        } else {
+          msg.innerHTML = `<span class="error">${data.detail || 'Erro ao criar experimento.'}</span>`;
+        }
+      } catch {
+        msg.innerHTML = `<span class="error">Erro de conexão com a API.</span>`;
+      }
+    };
+
+    // EVENT
+    document.getElementById('event-form').onsubmit = async e => {
+      e.preventDefault();
+      const expId = document.getElementById('event-exp-id').value;
+      const date = document.getElementById('event-date').value;
+      const msg = document.getElementById('event-msg');
+      msg.textContent = '';
+      const variants = Array.from(document.querySelectorAll('#variants-list .variant-row')).map(row => {
+        const [name, impressions, clicks] = Array.from(row.querySelectorAll('input')).map(i => i.value);
+        return { variant_name: name, impressions: Number(impressions), clicks: Number(clicks) };
+      });
+      try {
+        const res = await fetch('http://localhost:8000/events', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ experiment_id: Number(expId), date, variants })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          msg.innerHTML = `<span class="success">Evento enviado!</span>`;
+        } else {
+          msg.innerHTML = `<span class="error">${data.detail || data.error || 'Erro ao enviar evento.'}</span>`;
+        }
+      } catch {
+        msg.innerHTML = `<span class="error">Erro de conexão com a API.</span>`;
+      }
+    };
+
+    // EVENT FILE UPLOAD
+    document.getElementById('event-file').addEventListener('change', async function(e) {
+      const file = e.target.files[0];
+      const info = document.getElementById('file-info');
+      info.textContent = '';
+      if (!file) return;
+      if (!file.name.endsWith('.json')) {
+        info.innerHTML = '<span class="error">Apenas arquivos .json são aceitos.</span>';
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = async function(evt) {
+        try {
+          const json = JSON.parse(evt.target.result);
+          // Suporta array de eventos ou evento único
+          const events = Array.isArray(json) ? json : [json];
+          let success = 0, fail = 0;
+          for (const ev of events) {
+            const res = await fetch('http://localhost:8000/events', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(ev)
+            });
+            if (res.ok) success++;
+            else fail++;
+          }
+          info.innerHTML = `<span class="success">${success} evento(s) enviados. ${fail ? fail + ' falharam.' : ''}</span>`;
+        } catch {
+          info.innerHTML = '<span class="error">Arquivo inválido.</span>';
+        }
+      };
+      reader.readAsText(file);
+    });
+
+    // ALLOCATION
+    const allocationsDiv = document.getElementById('allocations');
+    const paramsUl = document.getElementById('params');
+    const summaryDiv = document.getElementById('summary');
+    const historyTbody = document.getElementById('history');
+    const pieCanvas = document.getElementById('pie');
+    let pieChart;
+    let lastHistoryData = [];
+
+    document.getElementById('alloc-form').onsubmit = async e => {
+      e.preventDefault();
+      const expIds = Array.from(document.querySelectorAll('#alloc-id-list input')).map(i => i.value).filter(Boolean);
+      const windowDays = document.getElementById('alloc-window').value;
+      const msg = document.getElementById('alloc-msg');
+      msg.textContent = '';
+      allocationsDiv.innerHTML = '';
+      paramsUl.innerHTML = '';
+      summaryDiv.innerHTML = '';
+      historyTbody.innerHTML = '';
+      if (pieChart) pieChart.destroy?.();
+
+      if (!expIds.length) {
+        msg.innerHTML = `<span class="error">Informe pelo menos um experimento.</span>`;
+        return;
+      }
+
+      let allHistory = [];
+      for (const expId of expIds) {
+        try {
+          const res = await fetch(`http://localhost:8000/allocation?experiment_id=${expId}&window_days=${windowDays}`);
+          const data = await res.json();
+          if (!res.ok) {
+            msg.innerHTML += `<span class="error">[Exp ${expId}] ${data.detail || data.error || 'Erro ao buscar alocação.'}</span><br>`;
+            continue;
+          }
+          // Pie chart (mostra só do último)
+          const labels = Object.keys(data.allocations);
+          const values = Object.values(data.allocations);
+          drawPie(labels, values);
+
+          // Alocação textual
+          allocationsDiv.innerHTML += `<b>Experimento ${expId}</b><br>` +
+            labels.map(
+              v => `<b class="variant-filter-btn" data-variant="${v}" onclick="filterVariant('${v}')">${v}:</b> ${(data.allocations[v]*100).toFixed(1)}%`
+            ).join('<br>') + '<br><br>';
+
+          // Parâmetros
+          paramsUl.innerHTML = Object.entries(data.parameters)
+            .map(([k,v]) => `<li><b>${k}:</b> ${v}</li>`).join('');
+
+          // Resumo
+          if (data.summary) {
+            summaryDiv.innerHTML = `
+              <b>Total de Impressões:</b> ${data.summary.total_impressions}<br>
+              <b>Total de Cliques:</b> ${data.summary.total_clicks}<br>
+              <b>Variantes:</b> <ul>
+                ${data.summary.variants.map(v =>
+                  `<li>${v.name}: ${v.impressions} imp / ${v.clicks} cliques</li>`
+                ).join('')}
+              </ul>
+            `;
+          }
+
+          // Histórico
+          if (data.history && data.history.length) {
+            allHistory = allHistory.concat(data.history.map(h => ({...h, experiment_id: expId})));
+          }
+        } catch {
+          msg.innerHTML += `<span class="error">[Exp ${expId}] Erro de conexão com a API.</span><br>`;
+        }
+      }
+      lastHistoryData = allHistory;
+      renderHistoryTable(allHistory);
+      renderVariantFilters(getAllVariantsFromHistory(allHistory));
+      msg.innerHTML += `<span class="success">Dados carregados!</span>`;
+    };
+
+    // HISTORY
+    document.getElementById('history-form').onsubmit = async e => {
+      e.preventDefault();
+      const expIds = Array.from(document.querySelectorAll('#history-id-list input')).map(i => i.value).filter(Boolean);
+      const startDate = document.getElementById('history-start-date').value;
+      const endDate = document.getElementById('history-end-date').value;
+      const msg = document.getElementById('history-msg');
+      msg.textContent = '';
+      historyTbody.innerHTML = '';
+      if (!expIds.length) {
+        msg.innerHTML = `<span class="error">Informe pelo menos um experimento.</span>`;
+        return;
+      }
+      let allHistory = [];
+      for (const expId of expIds) {
+        let url = `http://localhost:8000/experiments/${expId}/history`;
+        const params = [];
+        if (startDate) params.push(`start_date=${startDate}`);
+        if (endDate) params.push(`end_date=${endDate}`);
+        if (params.length) url += '?' + params.join('&');
+        try {
+          const res = await fetch(url);
+          const data = await res.json();
+          if (!res.ok) {
+            msg.innerHTML += `<span class="error">[Exp ${expId}] ${data.detail || data.error || 'Erro ao buscar histórico.'}</span><br>`;
+            continue;
+          }
+          if (data.history && data.history.length) {
+            allHistory = allHistory.concat(data.history.map(h => ({...h, experiment_id: expId})));
+          }
+        } catch {
+          msg.innerHTML += `<span class="error">[Exp ${expId}] Erro de conexão com a API.</span><br>`;
+        }
+      }
+      lastHistoryData = allHistory;
+      renderHistoryTable(allHistory);
+      renderVariantFilters(getAllVariantsFromHistory(allHistory));
+      msg.innerHTML += `<span class="success">Histórico carregado!</span>`;
+    };
+
+    // VARIANT FILTERS
+    function getAllVariantsFromHistory(history) {
+      const set = new Set();
+      history.forEach(h => Object.keys(h.allocations || {}).forEach(v => set.add(v)));
+      return Array.from(set);
+    }
+    function renderVariantFilters(variants) {
+      const container = document.getElementById('variant-filters');
+      if (!variants.length) { container.innerHTML = ''; return; }
+      container.innerHTML = '<b>Filtrar por variante:</b> ' +
+        variants.map(v =>
+          `<button class="variant-filter-btn" onclick="filterVariant('${v}')">${v}</button>`
+        ).join('') +
+        `<button class="variant-filter-btn" onclick="filterVariant('')">Todas</button>`;
+    }
+    function filterVariant(variant) {
+      const filtered = variant
+        ? lastHistoryData.filter(h => h.allocations && h.allocations[variant] !== undefined)
+        : lastHistoryData;
+      renderHistoryTable(filtered);
+      // Destaca botão selecionado
+      document.querySelectorAll('.variant-filter-btn').forEach(btn => {
+        if (btn.textContent.replace(':','') === variant) btn.classList.add('selected');
+        else if (!variant && btn.textContent === 'Todas') btn.classList.add('selected');
+        else btn.classList.remove('selected');
+      });
+    }
+    function renderHistoryTable(history) {
+      const tbody = document.getElementById('history');
+      if (!history.length) {
+        tbody.innerHTML = '<tr><td colspan="5">Sem histórico</td></tr>';
+        return;
+      }
+      tbody.innerHTML = history.map(h =>
+        `<tr>
+          <td>${h.experiment_id || '-'}</td>
+          <td>${h.date}</td>
+          <td>${Object.entries(h.allocations).map(([k,v]) => `${k}: ${(v*100).toFixed(1)}%`).join('<br>')}</td>
+          <td>${h.total_impressions || '-'}</td>
+          <td>${h.total_clicks || '-'}</td>
+        </tr>`
+      ).join('');
+    }
+
+    function drawPie(labels, values) {
+      if (window.Chart) {
+        pieChart = new Chart(pieCanvas, {
+          type: 'pie',
+          data: {
+            labels,
+            datasets: [{
+              data: values,
+              backgroundColor: ['#2980b9', '#27ae60', '#e67e22', '#8e44ad', '#c0392b', '#f1c40f']
+            }]
+          },
+          options: {
+            plugins: {
+              legend: { position: 'bottom' }
+            }
+          }
+        });
+      }
+    }
+
+    // Carrega Chart.js dinamicamente
+    (function loadChartJs() {
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+      document.body.appendChild(script);
+    })();
+  </script>
+</body>
+</html>

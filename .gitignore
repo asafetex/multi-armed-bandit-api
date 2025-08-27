@@ -1,0 +1,9 @@
+pycache/
+*.pyc
+.venv/
+venv/
+.env
+*.db
+.DS_Store
+.vscode/
+postgres_data/

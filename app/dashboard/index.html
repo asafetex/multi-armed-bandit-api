@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Multi-Armed Bandit Dashboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f7f7f7; margin: 0; padding: 0; }
+    .container { max-width: 900px; margin: 30px auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #0001; padding: 32px; }
+    h1 { text-align: center; color: #2c3e50; }
+    .section { margin-bottom: 32px; }
+    .flex { display: flex; gap: 32px; flex-wrap: wrap; }
+    .card { background: #f0f4f8; border-radius: 8px; padding: 16px 24px; flex: 1; min-width: 250px; }
+    .chart { width: 300px; height: 300px; margin: 0 auto; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    th, td { padding: 8px 12px; border-bottom: 1px solid #ddd; text-align: center; }
+    th { background: #e3eaf2; }
+    .error { color: #c0392b; font-weight: bold; }
+    .success { color: #27ae60; font-weight: bold; }
+    label { font-weight: bold; }
+    input, select { padding: 6px 10px; margin: 0 8px 0 0; border-radius: 4px; border: 1px solid #ccc; }
+    button { padding: 8px 18px; border: none; border-radius: 4px; background: #2980b9; color: #fff; font-weight: bold; cursor: pointer; }
+    button:hover { background: #1c5d85; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Multi-Armed Bandit Dashboard</h1>
+    <div class="section">
+      <form id="form">
+        <label>Experimento ID: <input type="number" id="experiment_id" value="1" min="1" required /></label>
+        <label>Janela (dias): <input type="number" id="window_days" value="14" min="1" max="365" required /></label>
+        <button type="submit">Buscar Alocação</button>
+      </form>
+      <div id="msg"></div>
+    </div>
+    <div class="section flex">
+      <div class="card">
+        <h2>Alocação Recomendada</h2>
+        <canvas id="pie" class="chart"></canvas>
+        <div id="allocations"></div>
+      </div>
+      <div class="card">
+        <h2>Parâmetros do Algoritmo</h2>
+        <ul id="params"></ul>
+        <h3>Resumo</h3>
+        <div id="summary"></div>
+      </div>
+    </div>
+    <div class="section">
+      <h2>Histórico de Alocações</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Alocação</th>
+            <th>Impressões</th>
+            <th>Cliques</th>
+          </tr>
+        </thead>
+        <tbody id="history"></tbody>
+      </table>
+    </div>
+  </div>
+  <script>
+    const form = document.getElementById('form');
+    const msg = document.getElementById('msg');
+    const allocationsDiv = document.getElementById('allocations');
+    const paramsUl = document.getElementById('params');
+    const summaryDiv = document.getElementById('summary');
+    const historyTbody = document.getElementById('history');
+    const pieCanvas = document.getElementById('pie');
+    let pieChart;
+
+    async function fetchAllocation(expId, windowDays) {
+      msg.textContent = '';
+      allocationsDiv.innerHTML = '';
+      paramsUl.innerHTML = '';
+      summaryDiv.innerHTML = '';
+      historyTbody.innerHTML = '';
+      if (pieChart) pieChart.destroy?.();
+
+      try {
+        const res = await fetch(`http://localhost:8000/allocation?experiment_id=${expId}&window_days=${windowDays}`);
+        const data = await res.json();
+        if (!res.ok) {
+          msg.innerHTML = `<span class="error">${data.detail || data.error || 'Erro ao buscar alocação.'}</span>`;
+          return;
+        }
+        // Pie chart
+        const labels = Object.keys(data.allocations);
+        const values = Object.values(data.allocations);
+        drawPie(labels, values);
+
+        // Alocação textual
+        allocationsDiv.innerHTML = labels.map(
+          v => `<b>${v}:</b> ${(data.allocations[v]*100).toFixed(1)}%`
+        ).join('<br>');
+
+        // Parâmetros
+        paramsUl.innerHTML = Object.entries(data.parameters)
+          .map(([k,v]) => `<li><b>${k}:</b> ${v}</li>`).join('');
+
+        // Resumo
+        if (data.summary) {
+          summaryDiv.innerHTML = `
+            <b>Total de Impressões:</b> ${data.summary.total_impressions}<br>
+            <b>Total de Cliques:</b> ${data.summary.total_clicks}<br>
+            <b>Variantes:</b> <ul>
+              ${data.summary.variants.map(v =>
+                `<li>${v.name}: ${v.impressions} imp / ${v.clicks} cliques</li>`
+              ).join('')}
+            </ul>
+          `;
+        }
+
+        // Histórico
+        if (data.history && data.history.length) {
+          historyTbody.innerHTML = data.history.map(h =>
+            `<tr>
+              <td>${h.date}</td>
+              <td>${Object.entries(h.allocations).map(([k,v]) => `${k}: ${(v*100).toFixed(1)}%`).join('<br>')}</td>
+              <td>${h.total_impressions}</td>
+              <td>${h.total_clicks}</td>
+            </tr>`
+          ).join('');
+        } else {
+          historyTbody.innerHTML = '<tr><td colspan="4">Sem histórico</td></tr>';
+        }
+
+        msg.innerHTML = `<span class="success">Dados carregados com sucesso!</span>`;
+      } catch (e) {
+        msg.innerHTML = `<span class="error">Erro de conexão com a API.</span>`;
+      }
+    }
+
+    function drawPie(labels, values) {
+      if (window.Chart) {
+        pieChart = new Chart(pieCanvas, {
+          type: 'pie',
+          data: {
+            labels,
+            datasets: [{
+              data: values,
+              backgroundColor: ['#2980b9', '#27ae60', '#e67e22', '#8e44ad', '#c0392b', '#f1c40f']
+            }]
+          },
+          options: {
+            plugins: {
+              legend: { position: 'bottom' }
+            }
+          }
+        });
+      }
+    }
+
+    form.onsubmit = e => {
+      e.preventDefault();
+      const expId = document.getElementById('experiment_id').value;
+      const windowDays = document.getElementById('window_days').value;
+      fetchAllocation(expId, windowDays);
+    };
+
+    // Carrega Chart.js dinamicamente
+    (function loadChartJs() {
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+      script.onload = () => fetchAllocation(1, 14);
+      document.body.appendChild(script);
+    })();
+  </script>
+</body>
+</html>
