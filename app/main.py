@@ -122,56 +122,7 @@ async def health_check(db: Session = Depends(get_db)):
         "database_url_configured": "DATABASE_URL" in os.environ
     }
 
-@app.get("/db-test")
-async def database_test():
-    """Test database connection with detailed information"""
-    try:
-        from app.core.database import engine
-        
-        # Detect database type
-        db_url = str(engine.url)
-        is_sqlite = db_url.startswith('sqlite')
-        is_postgresql = 'postgresql' in db_url or 'postgres' in db_url
-        
-        # Test raw connection
-        with engine.connect() as conn:
-            # Get database version
-            result = conn.execute(text("SELECT version()"))
-            db_version = result.fetchone()[0]
-            
-            # Test table existence - different queries for different databases
-            if is_sqlite:
-                # SQLite query
-                tables_result = conn.execute(text("""
-                    SELECT name FROM sqlite_master 
-                    WHERE type='table' AND name NOT LIKE 'sqlite_%'
-                """))
-            else:
-                # PostgreSQL query (and most other databases)
-                tables_result = conn.execute(text("""
-                    SELECT table_name 
-                    FROM information_schema.tables 
-                    WHERE table_schema = 'public'
-                """))
-            
-            tables = [row[0] for row in tables_result.fetchall()]
-            
-        return {
-            "status": "success",
-            "database_type": "sqlite" if is_sqlite else "postgresql" if is_postgresql else "other",
-            "database_version": db_version,
-            "tables": tables,
-            "database_url_configured": "DATABASE_URL" in os.environ,
-            "engine_url": str(engine.url).replace(str(engine.url).split('@')[0].split('://')[-1], '***') if '@' in str(engine.url) else str(engine.url)
-        }
-        
-    except Exception as e:
-        logger.error(f"Database test failed: {e}")
-        return {
-            "status": "error",
-            "error": str(e),
-            "database_url_configured": "DATABASE_URL" in os.environ
-        }
+# Removed /db-test endpoint - security risk, exposes sensitive database information
 
 @app.get("/dashboard", response_class=HTMLResponse)
 async def get_dashboard():
@@ -208,13 +159,9 @@ async def get_dashboard():
     except Exception as e:
         return HTMLResponse(content=f"<h1>Error loading dashboard: {str(e)}</h1>")
 
-@app.get("/bandit-dashboard.html", response_class=HTMLResponse)
-async def serve_dashboard_file():
-    """Alternative route to serve dashboard - for compatibility"""
-    return await get_dashboard()
+# Removed /bandit-dashboard.html endpoint - duplicate of /dashboard
 
 @app.post("/experiments/", response_model=ExperimentResponse)
-@app.post("/experiments", response_model=ExperimentResponse)
 async def create_new_experiment(
     experiment: ExperimentCreate, 
     db: Session = Depends(get_db)
@@ -528,33 +475,7 @@ async def get_allocation_history(
         ]
     }
 
-@app.post("/migrate_database")
-async def migrate_database(db: Session = Depends(get_db)):
-    """Manually run database migrations"""
-    try:
-        # Read and execute the init.sql file
-        import os
-        sql_file_path = os.path.join("scripts", "init.sql")
-        
-        if os.path.exists(sql_file_path):
-            with open(sql_file_path, 'r', encoding='utf-8') as f:
-                sql_content = f.read()
-            
-            # Execute the SQL commands
-            db.execute(text(sql_content))
-            db.commit()
-            
-            return {"message": "✅ Database migrated successfully!", "status": "success"}
-        else:
-            # Fallback: create tables using SQLAlchemy
-            Base.metadata.create_all(bind=engine)
-            db.commit()
-            return {"message": "✅ Database tables created using SQLAlchemy!", "status": "success"}
-            
-    except Exception as e:
-        db.rollback()
-        logger.error(f"Database migration failed: {e}")
-        raise HTTPException(status_code=500, detail=f"Migration failed: {str(e)}")
+# Removed /migrate_database endpoint - security risk, allows unprotected database migration
 
 @app.get("/download-template")
 async def download_template():
