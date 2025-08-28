@@ -773,7 +773,7 @@
                     <form id="api-config-form">
                         <div class="form-group">
                             <label class="form-label" data-pt="URL Base da API" data-en="API Base URL">URL Base da API</label>
-                            <input type="url" class="form-control" id="api-base-url" value="http://localhost:8000" data-pt-placeholder="https://sua-api.com" data-en-placeholder="https://your-api.com">
+                            <input type="url" class="form-control" id="api-base-url" value="http://localhost:8080" data-pt-placeholder="https://sua-api.com" data-en-placeholder="https://your-api.com">
                         </div>
                         <div class="form-group">
                             <label class="form-label" data-pt="Timeout (segundos)" data-en="Timeout (seconds)">Timeout (segundos)</label>
@@ -838,7 +838,7 @@
         // Global variables for translation and configuration
         let currentLanguage = localStorage.getItem('dashboard-language') || 'pt';
         let currentTheme = localStorage.getItem('dashboard-theme') || 'light';
-        let apiBaseUrl = localStorage.getItem('api-base-url') || 'http://localhost:8000';
+        let apiBaseUrl = localStorage.getItem('api-base-url') || 'http://localhost:8080';
         let autoRefreshInterval = null;
         
         // Translation messages

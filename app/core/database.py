@@ -7,21 +7,30 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from .config import settings
 
-# Database engine configuration optimized for Render PostgreSQL
+# Database engine configuration - supports both SQLite and PostgreSQL
 connect_args = {}
-if settings.DATABASE_URL.startswith('postgresql://') or settings.DATABASE_URL.startswith('postgres://'):
-    # Add SSL configuration for Render PostgreSQL
-    connect_args = {"sslmode": "require"}
+engine_kwargs = {
+    "pool_pre_ping": True,
+    "echo": settings.DEBUG
+}
 
-engine = create_engine(
-    settings.DATABASE_URL,
-    pool_pre_ping=True,
-    pool_recycle=300,
-    pool_size=10,
-    max_overflow=20,
-    connect_args=connect_args,
-    echo=settings.DEBUG
-)
+if settings.DATABASE_URL.startswith('postgresql://') or settings.DATABASE_URL.startswith('postgres://'):
+    # PostgreSQL configuration for Render
+    connect_args = {"sslmode": "require"}
+    engine_kwargs.update({
+        "pool_recycle": 300,
+        "pool_size": 10,
+        "max_overflow": 20,
+        "connect_args": connect_args
+    })
+elif settings.DATABASE_URL.startswith('sqlite://'):
+    # SQLite configuration for local development
+    connect_args = {"check_same_thread": False}
+    engine_kwargs.update({
+        "connect_args": connect_args
+    })
+
+engine = create_engine(settings.DATABASE_URL, **engine_kwargs)
 
 # Create session factory
 SessionLocal = sessionmaker(

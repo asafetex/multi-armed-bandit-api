@@ -15,7 +15,7 @@ class Settings:
     # Database
     DATABASE_URL: str = os.getenv(
         "DATABASE_URL", 
-        "postgresql://bandit_user:bandit_pass@localhost:5432/bandit_db"
+        "sqlite:///./bandit_api.db"  # SQLite para desenvolvimento local
     )
     
     def __init__(self):

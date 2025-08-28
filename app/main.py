@@ -191,6 +191,7 @@ async def get_dashboard():
     except Exception as e:
         return HTMLResponse(content=f"<h1>Error loading dashboard: {str(e)}</h1>")
 
+@app.post("/experiments/", response_model=ExperimentResponse)
 @app.post("/experiments", response_model=ExperimentResponse)
 async def create_new_experiment(
     experiment: ExperimentCreate, 
@@ -198,6 +199,12 @@ async def create_new_experiment(
 ):
     """Create a new A/B test experiment"""
     return create_experiment(db=db, experiment=experiment)
+
+@app.get("/experiments/", response_model=List[ExperimentResponse])
+async def list_experiments(db: Session = Depends(get_db)):
+    """List all experiments"""
+    experiments = db.query(Experiment).all()
+    return experiments
 
 @app.get("/experiments/{experiment_id}", response_model=ExperimentResponse)
 async def get_experiment_details(
@@ -222,7 +229,18 @@ async def submit_events(
 
         experiment_id = data["experiment_id"]
         date_str = data["date"]
-        variants = data["variants"]
+        
+        # Handle both formats: with variants array or direct variant data
+        if "variants" in data:
+            variants = data["variants"]
+        else:
+            # Single variant format from dashboard
+            variants = [{
+                "variant_name": data["variant_name"],
+                "impressions": data["impressions"],
+                "clicks": data["clicks"],
+                "conversions": data.get("conversions", 0)
+            }]
 
         # Para cada variante, criar métrica
         for variant in variants:
@@ -237,6 +255,7 @@ async def submit_events(
                 # Atualizar
                 existing.impressions = variant["impressions"]
                 existing.clicks = variant["clicks"]
+                existing.conversions = variant.get("conversions", 0)
             else:
                 # Criar novo
                 metric = DailyMetric(
@@ -244,7 +263,8 @@ async def submit_events(
                     variant_name=variant["variant_name"],
                     date=date_type.fromisoformat(date_str),
                     impressions=variant["impressions"],
-                    clicks=variant["clicks"]
+                    clicks=variant["clicks"],
+                    conversions=variant.get("conversions", 0)
                 )
                 db.add(metric)
 
@@ -253,6 +273,7 @@ async def submit_events(
 
     except Exception as e:
         db.rollback()
+        logger.error(f"Error in submit_events: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 from fastapi.responses import JSONResponse
@@ -578,7 +599,17 @@ async def upload_data(
 async def reset_data(db: Session = Depends(get_db)):
     """Resets all data in the database"""
     try:
-        db.execute(text("TRUNCATE TABLE daily_metrics, allocations, experiments RESTART IDENTITY CASCADE;"))
+        # Different commands for SQLite vs PostgreSQL
+        if settings.DATABASE_URL.startswith('sqlite://'):
+            # SQLite doesn't support TRUNCATE, use DELETE
+            db.execute(text("DELETE FROM daily_metrics;"))
+            db.execute(text("DELETE FROM allocations;"))
+            db.execute(text("DELETE FROM experiments;"))
+            db.execute(text("DELETE FROM sqlite_sequence WHERE name IN ('daily_metrics', 'allocations', 'experiments');"))
+        else:
+            # PostgreSQL
+            db.execute(text("TRUNCATE TABLE daily_metrics, allocations, experiments RESTART IDENTITY CASCADE;"))
+        
         db.commit()
         return {"message": "Dados limpos com sucesso!"}
     except Exception as e:
