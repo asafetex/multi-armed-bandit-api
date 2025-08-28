@@ -4,475 +4,149 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Multi-Armed Bandit Analytics Dashboard</title>
-    
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         
         :root {
-            --primary: #4a90e2;
-            --success: #5cb85c;
-            --danger: #d9534f;
-            --warning: #f0ad4e;
-            --dark: #2c3e50;
-            --light: #ecf0f1;
-            --bg: #f5f7fa;
-            --card-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            --hover-shadow: 0 4px 8px rgba(0,0,0,0.15);
-            --text-color: #2c3e50;
-            --card-bg: #ffffff;
-            --border-color: #ddd;
-            --table-hover: #f8f9fa;
+            --primary: #4a90e2; --success: #5cb85c; --danger: #d9534f; --warning: #f0ad4e;
+            --dark: #2c3e50; --light: #ecf0f1; --bg: #f5f7fa; --text-color: #2c3e50;
+            --card-bg: #ffffff; --border-color: #ddd; --table-hover: #f8f9fa;
+            --card-shadow: 0 2px 4px rgba(0,0,0,0.1); --hover-shadow: 0 4px 8px rgba(0,0,0,0.15);
         }
         
         [data-theme="dark"] {
-            --primary: #5dade2;
-            --success: #58d68d;
-            --danger: #ec7063;
-            --warning: #f7dc6f;
-            --dark: #ffffff;
-            --light: #34495e;
-            --bg: #1a1a1a;
-            --card-shadow: 0 2px 4px rgba(0,0,0,0.3);
-            --hover-shadow: 0 4px 8px rgba(0,0,0,0.4);
-            --text-color: #ffffff;
-            --card-bg: #2c3e50;
-            --border-color: #34495e;
-            --table-hover: #34495e;
+            --primary: #5dade2; --success: #58d68d; --danger: #ec7063; --warning: #f7dc6f;
+            --dark: #ffffff; --light: #34495e; --bg: #1a1a1a; --text-color: #ffffff;
+            --card-bg: #2c3e50; --border-color: #34495e; --table-hover: #34495e;
+            --card-shadow: 0 2px 4px rgba(0,0,0,0.3); --hover-shadow: 0 4px 8px rgba(0,0,0,0.4);
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: var(--bg);
-            color: var(--text-color);
-            line-height: 1.6;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: var(--bg); color: var(--text-color); line-height: 1.6;
             transition: background-color 0.3s ease, color 0.3s ease;
         }
         
-        /* Header */
         .header {
             background: linear-gradient(135deg, var(--primary) 0%, #357abd 100%);
-            color: white;
-            padding: 2rem 0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            color: white; padding: 2rem 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         
         .header-content {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            max-width: 1400px; margin: 0 auto; padding: 0 2rem;
+            display: flex; justify-content: space-between; align-items: center;
         }
         
-        .header-controls {
-            display: flex;
-            align-items: center;
-            gap: 2rem;
-        }
+        .header-controls { display: flex; align-items: center; gap: 2rem; }
+        .header-stats { display: flex; gap: 2rem; }
+        .stat-item { text-align: center; }
+        .stat-value { font-size: 1.5rem; font-weight: bold; }
+        .stat-label { font-size: 0.85rem; opacity: 0.9; }
         
-        /* Dark Mode Toggle */
         .theme-toggle {
-            background: rgba(255, 255, 255, 0.2);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50px;
-            padding: 0.5rem 1rem;
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.9rem;
-            font-weight: 500;
+            background: rgba(255, 255, 255, 0.2); border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50px; padding: 0.5rem 1rem; color: white; cursor: pointer;
+            transition: all 0.3s ease; display: flex; align-items: center; gap: 0.5rem;
         }
-        
         .theme-toggle:hover {
-            background: rgba(255, 255, 255, 0.3);
-            border-color: rgba(255, 255, 255, 0.5);
-            transform: translateY(-1px);
+            background: rgba(255, 255, 255, 0.3); transform: translateY(-1px);
         }
         
-        .theme-icon {
-            font-size: 1.2rem;
-            transition: transform 0.3s ease;
-        }
+        .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+        .grid { display: grid; gap: 1.5rem; margin-bottom: 2rem; }
+        .grid-2 { grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); }
         
-        .theme-toggle:hover .theme-icon {
-            transform: rotate(180deg);
-        }
-        
-        .header h1 {
-            font-size: 2rem;
-            font-weight: 300;
-            letter-spacing: 1px;
-        }
-        
-        .header-stats {
-            display: flex;
-            gap: 2rem;
-        }
-        
-        .stat-item {
-            text-align: center;
-        }
-        
-        .stat-value {
-            font-size: 1.5rem;
-            font-weight: bold;
-        }
-        
-        .stat-label {
-            font-size: 0.85rem;
-            opacity: 0.9;
-        }
-        
-        /* Container */
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-        
-        /* Grid Layout */
-        .grid {
-            display: grid;
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        
-        .grid-2 {
-            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
-        }
-        
-        .grid-3 {
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-        }
-        
-        /* Cards */
         .card {
-            background: var(--card-bg);
-            border-radius: 8px;
-            padding: 1.5rem;
-            box-shadow: var(--card-shadow);
-            transition: all 0.3s ease;
+            background: var(--card-bg); border-radius: 8px; padding: 1.5rem;
+            box-shadow: var(--card-shadow); transition: all 0.3s ease;
         }
-        
-        .card:hover {
-            box-shadow: var(--hover-shadow);
-            transform: translateY(-2px);
-        }
+        .card:hover { box-shadow: var(--hover-shadow); transform: translateY(-2px); }
         
         .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
-            border-bottom: 2px solid var(--light);
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 2px solid var(--light);
         }
+        .card-title { font-size: 1.25rem; font-weight: 600; color: var(--dark); }
         
-        .card-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: var(--dark);
-        }
-        
-        /* Forms */
-        .form-group {
-            margin-bottom: 1rem;
-        }
-        
-        .form-label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-            color: var(--dark);
-        }
-        
+        .form-group { margin-bottom: 1rem; }
+        .form-label { display: block; margin-bottom: 0.5rem; font-weight: 500; color: var(--dark); }
         .form-control {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            font-size: 1rem;
-            transition: border-color 0.3s;
-            background: var(--card-bg);
-            color: var(--text-color);
+            width: 100%; padding: 0.75rem; border: 1px solid var(--border-color);
+            border-radius: 4px; font-size: 1rem; background: var(--card-bg); color: var(--text-color);
         }
+        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.75rem; }
+        .variant-row { display: grid; grid-template-columns: 2fr 1.5fr 1.5fr 1.5fr 0.8fr; gap: 0.5rem; align-items: end; }
         
-        .form-control:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
-        }
-        
-        .form-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 0.75rem;
-        }
-        
-        .variant-row {
-            display: grid;
-            grid-template-columns: 2fr 1.5fr 1.5fr 1.5fr 0.8fr;
-            gap: 0.5rem;
-            align-items: end;
-        }
-        
-        /* Buttons */
         .btn {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 4px;
-            font-size: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: inline-block;
-            text-align: center;
+            padding: 0.75rem 1.5rem; border: none; border-radius: 4px; font-size: 1rem;
+            font-weight: 500; cursor: pointer; transition: all 0.3s; text-align: center;
         }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-warning { background: var(--warning); color: white; }
+        .btn-sm { padding: 0.5rem 1rem; font-size: 0.875rem; }
+        .btn-group { display: flex; gap: 0.5rem; margin-top: 1rem; }
         
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background: #357abd;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(74, 144, 226, 0.3);
-        }
-        
-        .btn-success {
-            background: var(--success);
-            color: white;
-        }
-        
-        .btn-danger {
-            background: var(--danger);
-            color: white;
-        }
-        
-        .btn-warning {
-            background: var(--warning);
-            color: white;
-        }
-        
-        .btn-sm {
-            padding: 0.5rem 1rem;
-            font-size: 0.875rem;
-        }
-        
-        .btn-group {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 1rem;
-        }
-        
-        /* Allocation Display */
         .allocation-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-top: 1rem;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem; margin-top: 1rem;
         }
-        
         .allocation-item {
-            background: var(--bg);
-            padding: 1rem;
-            border-radius: 8px;
+            background: var(--bg); padding: 1rem; border-radius: 8px;
             border-left: 4px solid var(--primary);
         }
+        .allocation-item.conversion { border-left-color: #e67e22; }
+        .allocation-item.conversion .allocation-value { color: #e67e22; }
+        .allocation-name { font-weight: 600; color: var(--dark); margin-bottom: 0.5rem; }
+        .allocation-value { font-size: 1.5rem; color: var(--primary); }
+        .allocation-stats { font-size: 0.875rem; color: #666; margin-top: 0.5rem; }
         
-        .allocation-item.conversion {
-            border-left-color: #e67e22;
-        }
-        
-        .allocation-item.conversion .allocation-value {
-            color: #e67e22;
-        }
-        
-        .allocation-name {
-            font-weight: 600;
-            color: var(--dark);
-            margin-bottom: 0.5rem;
-        }
-        
-        .allocation-value {
-            font-size: 1.5rem;
-            color: var(--primary);
-        }
-        
-        .allocation-stats {
-            font-size: 0.875rem;
-            color: #666;
-            margin-top: 0.5rem;
-        }
-        
-        /* Tables */
-        .table-container {
-            overflow-x: auto;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        th {
-            background: var(--bg);
-            padding: 1rem;
-            text-align: left;
-            font-weight: 600;
-            color: var(--dark);
-            border-bottom: 2px solid var(--primary);
-        }
-        
-        td {
-            padding: 1rem;
-            border-bottom: 1px solid var(--light);
-        }
-        
-        tbody tr:hover {
-            background: var(--table-hover);
-        }
-        
-        td {
-            color: var(--text-color);
-        }
-        
-        /* Charts */
-        .chart-container {
-            position: relative;
-            height: 300px;
-            margin-top: 1rem;
-        }
-        
-        /* Metrics Cards */
         .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 1rem;
-            margin-bottom: 2rem;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem; margin-bottom: 2rem;
         }
-        
         .metric-card {
-            background: var(--card-bg);
-            padding: 1.5rem;
-            border-radius: 8px;
-            text-align: center;
-            box-shadow: var(--card-shadow);
-            border-top: 3px solid var(--primary);
+            background: var(--card-bg); padding: 1.5rem; border-radius: 8px; text-align: center;
+            box-shadow: var(--card-shadow); border-top: 3px solid var(--primary);
         }
+        .metric-value { font-size: 2rem; font-weight: bold; color: var(--primary); }
+        .metric-label { font-size: 0.875rem; color: #666; margin-top: 0.5rem; }
         
-        .metric-value {
-            font-size: 2rem;
-            font-weight: bold;
-            color: var(--primary);
-        }
+        .alert { padding: 1rem; border-radius: 4px; margin-top: 1rem; }
+        .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .alert-danger { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .alert-warning { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
         
-        .metric-label {
-            font-size: 0.875rem;
-            color: #666;
-            margin-top: 0.5rem;
-        }
-        
-        /* Alerts */
-        .alert {
-            padding: 1rem;
-            border-radius: 4px;
-            margin-top: 1rem;
-        }
-        
-        .alert-success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        
-        .alert-danger {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        
-        .alert-warning {
-            background: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeeba;
-        }
-        
-        /* Tabs */
-        .tabs {
-            display: flex;
-            border-bottom: 2px solid var(--light);
-            margin-bottom: 1.5rem;
-        }
-        
+        .tabs { display: flex; border-bottom: 2px solid var(--light); margin-bottom: 1.5rem; }
         .tab {
-            padding: 1rem 2rem;
-            cursor: pointer;
-            background: none;
-            border: none;
-            font-size: 1rem;
-            color: #666;
-            transition: all 0.3s;
-            border-bottom: 3px solid transparent;
-            margin-bottom: -2px;
+            padding: 1rem 2rem; cursor: pointer; background: none; border: none;
+            font-size: 1rem; color: #666; transition: all 0.3s;
+            border-bottom: 3px solid transparent; margin-bottom: -2px;
         }
+        .tab:hover { color: var(--primary); }
+        .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
         
-        .tab:hover {
-            color: var(--primary);
-        }
+        .reset-section { position: fixed; bottom: 20px; right: 20px; z-index: 1000; }
+        .chart-container { position: relative; height: 300px; margin-top: 1rem; }
         
-        .tab.active {
-            color: var(--primary);
-            border-bottom-color: var(--primary);
-        }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: var(--bg); padding: 1rem; text-align: left; font-weight: 600; color: var(--dark); }
+        td { padding: 1rem; border-bottom: 1px solid var(--light); color: var(--text-color); }
+        tbody tr:hover { background: var(--table-hover); }
         
-        .tab-content {
-            display: none;
-        }
-        
-        .tab-content.active {
-            display: block;
-        }
-        
-        /* Reset Button */
-        .reset-section {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1000;
-        }
-        
-        /* Responsive */
         @media (max-width: 768px) {
-            .header h1 {
-                font-size: 1.5rem;
-            }
-            
-            .grid-2, .grid-3 {
-                grid-template-columns: 1fr;
-            }
-            
-            .header-content {
-                flex-direction: column;
-                gap: 1rem;
-            }
+            .header h1 { font-size: 1.5rem; }
+            .grid-2 { grid-template-columns: 1fr; }
+            .header-content { flex-direction: column; gap: 1rem; }
         }
     </style>
 </head>
 <body>
-    <!-- Header -->
     <div class="header">
         <div class="header-content">
             <h1>📊 Multi-Armed Bandit Analytics</h1>
@@ -488,28 +162,26 @@
                     </div>
                     <div class="stat-item">
                         <div class="stat-value" id="avg-ctr">0%</div>
-                        <div class="stat-label" data-pt="CTR Médio" data-en="Avg CTR">CTR Médio</div>
+                        <div class="stat-label">CTR Médio</div>
                     </div>
                     <div class="stat-item">
                         <div class="stat-value" id="avg-conversion">0%</div>
-                        <div class="stat-label" data-pt="Taxa de Conversão" data-en="Conversion Rate">Taxa de Conversão</div>
+                        <div class="stat-label">Taxa de Conversão</div>
                     </div>
                 </div>
                 <button class="theme-toggle" onclick="toggleLanguage()">
-                    <span class="theme-icon" id="lang-icon">🌐</span>
-                    <span id="lang-text" data-pt="English" data-en="Português">English</span>
+                    <span id="lang-icon">🌐</span>
+                    <span id="lang-text">English</span>
                 </button>
                 <button class="theme-toggle" onclick="toggleTheme()">
-                    <span class="theme-icon" id="theme-icon">🌙</span>
-                    <span id="theme-text" data-pt="Dark Mode" data-en="Dark Mode">Dark Mode</span>
+                    <span id="theme-icon">🌙</span>
+                    <span id="theme-text">Dark Mode</span>
                 </button>
             </div>
         </div>
     </div>
     
-    <!-- Main Container -->
     <div class="container">
-        <!-- Quick Metrics -->
         <div class="metrics-grid">
             <div class="metric-card">
                 <div class="metric-value" id="best-variant">-</div>
@@ -529,20 +201,15 @@
             </div>
         </div>
         
-        <!-- Tabs -->
         <div class="tabs">
-            <button class="tab active" onclick="switchTab(event, 'experiments')" data-pt="Experimentos" data-en="Experiments">Experimentos</button>
-            <button class="tab" onclick="switchTab(event, 'analysis')" data-pt="Análise" data-en="Analysis">Análise</button>
-            <button class="tab" onclick="switchTab(event, 'simulation')" data-pt="Simulação" data-en="Simulation">Simulação</button>
-            <button class="tab" onclick="switchTab(event, 'settings')" data-pt="Configurações" data-en="Settings">Configurações</button>
+            <button class="tab active" onclick="switchTab(event, 'experiments')">Experimentos</button>
+            <button class="tab" onclick="switchTab(event, 'analysis')">Análise</button>
+            <button class="tab" onclick="switchTab(event, 'simulation')">Simulação</button>
+            <button class="tab" onclick="switchTab(event, 'settings')">Configurações</button>
         </div>
         
-        <!-- Tab Contents -->
-        
-        <!-- Experiments Tab -->
         <div id="experiments-tab" class="tab-content active">
             <div class="grid grid-2">
-                <!-- Create Experiment -->
                 <div class="card">
                     <div class="card-header">
                         <h2 class="card-title">Criar Experimento</h2>
@@ -561,7 +228,6 @@
                     </form>
                 </div>
                 
-                <!-- Submit Events Manual -->
                 <div class="card">
                     <div class="card-header">
                         <h2 class="card-title">Enviar Dados Manualmente</h2>
@@ -594,7 +260,6 @@
                 </div>
             </div>
             
-            <!-- Upload CSV Card -->
             <div class="card">
                 <div class="card-header">
                     <h2 class="card-title">📤 Upload de Dados CSV</h2>
@@ -607,20 +272,11 @@
                             Apenas arquivos .csv são aceitos. Estrutura: experiment_id, date, variant_name, impressions, clicks, conversions
                         </small>
                     </div>
-                    <button type="submit" class="btn btn-success">
-                        🚀 Enviar Dados CSV
-                    </button>
+                    <button type="submit" class="btn btn-success">🚀 Enviar Dados CSV</button>
                     <div id="csv-upload-message"></div>
-                    
-                    <!-- Upload Results -->
-                    <div id="csv-upload-results" style="display: none; margin-top: 1rem;">
-                        <div id="csv-upload-summary"></div>
-                        <div id="csv-upload-errors" style="margin-top: 1rem;"></div>
-                    </div>
                 </form>
             </div>
             
-            <!-- Get Allocation -->
             <div class="card">
                 <div class="card-header">
                     <h2 class="card-title">Calcular Alocação Ótima</h2>
@@ -640,13 +296,11 @@
                 </form>
                 
                 <div id="allocation-results" style="margin-top: 2rem; display: none;">
-                    <!-- CTR-based Allocation -->
                     <div style="margin-bottom: 2rem;">
                         <h3 style="color: var(--primary); margin-bottom: 1rem;">📈 Alocação Baseada em CTR</h3>
                         <div id="ctr-allocation-display" class="allocation-grid"></div>
                     </div>
                     
-                    <!-- Conversion-based Allocation -->
                     <div>
                         <h3 style="color: #e67e22; margin-bottom: 1rem;">🎯 Alocação Baseada em CTR + Conversão</h3>
                         <div id="conversion-allocation-display" class="allocation-grid"></div>
@@ -655,130 +309,37 @@
             </div>
         </div>
         
-        <!-- Analysis Tab -->
         <div id="analysis-tab" class="tab-content">
             <div class="grid grid-2">
-                <!-- CTR Performance Chart -->
                 <div class="card">
-                    <div class="card-header">
-                        <h2 class="card-title">Performance CTR</h2>
-                    </div>
-                    <div class="chart-container">
-                        <canvas id="ctr-chart"></canvas>
-                    </div>
+                    <div class="card-header"><h2 class="card-title">Performance CTR</h2></div>
+                    <div class="chart-container"><canvas id="ctr-chart"></canvas></div>
                 </div>
-                
-                <!-- Allocation History Chart -->
                 <div class="card">
-                    <div class="card-header">
-                        <h2 class="card-title">Evolução da Alocação</h2>
-                    </div>
-                    <div class="chart-container">
-                        <canvas id="allocation-chart"></canvas>
-                    </div>
-                </div>
-                
-                <!-- Regret Analysis -->
-                <div class="card">
-                    <div class="card-header">
-                        <h2 class="card-title">Análise de Regret</h2>
-                    </div>
-                    <div class="chart-container">
-                        <canvas id="regret-chart"></canvas>
-                    </div>
-                </div>
-                
-                <!-- Confidence Intervals -->
-                <div class="card">
-                    <div class="card-header">
-                        <h2 class="card-title">Intervalos de Confiança</h2>
-                    </div>
-                    <div class="chart-container">
-                        <canvas id="confidence-chart"></canvas>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Results Table -->
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Dados Detalhados</h2>
-                </div>
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Data</th>
-                                <th>Variante</th>
-                                <th>Impressões</th>
-                                <th>Cliques</th>
-                                <th>CTR</th>
-                                <th>Alocação</th>
-                            </tr>
-                        </thead>
-                        <tbody id="results-table">
-                            <tr><td colspan="6" style="text-align: center;">Nenhum dado disponível</td></tr>
-                        </tbody>
-                    </table>
+                    <div class="card-header"><h2 class="card-title">Evolução da Alocação</h2></div>
+                    <div class="chart-container"><canvas id="allocation-chart"></canvas></div>
                 </div>
             </div>
         </div>
         
-        <!-- Simulation Tab -->
         <div id="simulation-tab" class="tab-content">
             <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Simulador de Cenários</h2>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">Dias para Simular</label>
-                        <input type="number" class="form-control" id="sim-days" value="30" min="1" max="365">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Impressões por Dia</label>
-                        <input type="number" class="form-control" id="sim-impressions" value="10000" min="100">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">CTR Control (%)</label>
-                        <input type="number" class="form-control" id="sim-ctr-control" value="7" min="0" max="100" step="0.1">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">CTR Variant B (%)</label>
-                        <input type="number" class="form-control" id="sim-ctr-variant" value="9.5" min="0" max="100" step="0.1">
-                    </div>
-                </div>
-                <button class="btn btn-primary" onclick="runSimulation()">Executar Simulação</button>
-                
-                <div id="simulation-results" style="margin-top: 2rem; display: none;">
-                    <div class="grid grid-2">
-                        <div class="chart-container">
-                            <canvas id="simulation-allocation-chart"></canvas>
-                        </div>
-                        <div class="chart-container">
-                            <canvas id="simulation-regret-chart"></canvas>
-                        </div>
-                    </div>
-                </div>
+                <div class="card-header"><h2 class="card-title">Simulador de Cenários</h2></div>
+                <p>Funcionalidade em desenvolvimento</p>
             </div>
         </div>
         
-        <!-- Settings Tab -->
         <div id="settings-tab" class="tab-content">
             <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Configurações do Algoritmo</h2>
-                </div>
-                <div class="alert alert-warning">
-                    Estas configurações afetam o comportamento do algoritmo Thompson Sampling
-                </div>
+                <div class="card-header"><h2 class="card-title">Configurações do Algoritmo</h2></div>
+                <div class="alert alert-warning">Estas configurações afetam o comportamento do algoritmo Thompson Sampling</div>
                 <div class="grid grid-2">
                     <div class="form-group">
-                        <label class="form-label">Alpha Prior (Thompson Sampling)</label>
+                        <label class="form-label">Alpha Prior</label>
                         <input type="number" class="form-control" id="alpha-prior" value="1" min="0.1" step="0.1">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Beta Prior (Thompson Sampling)</label>
+                        <label class="form-label">Beta Prior</label>
                         <input type="number" class="form-control" id="beta-prior" value="1" min="0.1" step="0.1">
                     </div>
                     <div class="form-group">
@@ -796,86 +357,97 @@
         </div>
     </div>
     
-    <!-- Reset Button -->
     <div class="reset-section">
         <button class="btn btn-danger" onclick="resetAllData()">🗑️ Limpar Todos os Dados</button>
     </div>
     
     <script>
-        // API Configuration
-        const API_URL = window.location.origin + '/api/v1';
-        
-        // Global variables
+        const API_URL = window.location.origin;
         let charts = {};
         let allExperiments = [];
         let currentExperimentData = null;
+        let currentLanguage = 'pt';
+        let translations = {
+            pt: {
+                experiments: 'Experimentos',
+                totalImpressions: 'Impressões Totais',
+                avgCTR: 'CTR Médio',
+                avgConversion: 'Taxa de Conversão',
+                bestVariant: 'Melhor Variante',
+                confidence: 'Confiança',
+                cumulativeRegret: 'Regret Acumulado',
+                convergenceRate: 'Taxa Convergência'
+            },
+            en: {
+                experiments: 'Experiments',
+                totalImpressions: 'Total Impressions',
+                avgCTR: 'Average CTR',
+                avgConversion: 'Conversion Rate',
+                bestVariant: 'Best Variant',
+                confidence: 'Confidence',
+                cumulativeRegret: 'Cumulative Regret',
+                convergenceRate: 'Convergence Rate'
+            }
+        };
         
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', function() {
             initializeTheme();
             initializeLanguage();
             initializeCharts();
             loadAllExperiments();
             setupEventListeners();
             
-            // Add initial variants if empty
             if (document.getElementById('variants-list').children.length === 0) {
                 addVariant('control', 1000, 70, 63);
                 addVariant('variant_a', 1000, 95, 86);
             }
         });
         
-        // Setup Event Listeners
         function setupEventListeners() {
-            // Create Experiment Form
-            document.getElementById('create-experiment-form').addEventListener('submit', async (e) => {
+            document.getElementById('create-experiment-form').addEventListener('submit', async function(e) {
                 e.preventDefault();
                 await createExperiment();
             });
             
-            // Submit Events Form (Manual)
-            document.getElementById('submit-events-form').addEventListener('submit', async (e) => {
+            document.getElementById('submit-events-form').addEventListener('submit', async function(e) {
                 e.preventDefault();
                 await submitEvents();
             });
             
-            // CSV Upload Form
-            document.getElementById('csv-upload-form').addEventListener('submit', async (e) => {
+            document.getElementById('csv-upload-form').addEventListener('submit', async function(e) {
                 e.preventDefault();
                 await uploadCSV();
             });
             
-            // Get Allocation Form
-            document.getElementById('get-allocation-form').addEventListener('submit', async (e) => {
+            document.getElementById('get-allocation-form').addEventListener('submit', async function(e) {
                 e.preventDefault();
                 await getAllocation();
             });
         }
         
-        // API Functions
         async function createExperiment() {
             const name = document.getElementById('exp-name').value;
             const description = document.getElementById('exp-description').value;
             
             try {
-                const response = await fetch(`${API_URL}/experiments`, {
+                const response = await fetch(API_URL + '/experiments/', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, description })
+                    body: JSON.stringify({ name: name, description: description })
                 });
                 
                 const result = await response.json();
                 const messageDiv = document.getElementById('create-message');
                 
                 if (response.ok) {
-                    messageDiv.innerHTML = `<div class="alert alert-success">✅ Experimento "${name}" criado com ID: ${result.id}</div>`;
+                    messageDiv.innerHTML = '<div class="alert alert-success">✅ Experimento "' + name + '" criado com ID: ' + result.id + '</div>';
                     document.getElementById('create-experiment-form').reset();
                     loadAllExperiments();
                 } else {
-                    messageDiv.innerHTML = `<div class="alert alert-danger">❌ Erro: ${result.detail}</div>`;
+                    messageDiv.innerHTML = '<div class="alert alert-danger">❌ Erro: ' + result.detail + '</div>';
                 }
             } catch (error) {
-                document.getElementById('create-message').innerHTML = `<div class="alert alert-danger">❌ Erro de conexão: ${error.message}</div>`;
+                document.getElementById('create-message').innerHTML = '<div class="alert alert-danger">❌ Erro de conexão: ' + error.message + '</div>';
             }
         }
         
@@ -884,7 +456,7 @@
             const date = document.getElementById('event-date').value;
             const variants = [];
             
-            document.querySelectorAll('#variants-list .variant-row').forEach(row => {
+            document.querySelectorAll('#variants-list .variant-row').forEach(function(row) {
                 const inputs = row.querySelectorAll('input');
                 variants.push({
                     variant_name: inputs[0].value,
@@ -895,34 +467,30 @@
             });
             
             if (variants.length === 0) {
-                document.getElementById('events-message').innerHTML = `<div class="alert alert-warning">⚠️ Adicione pelo menos uma variante</div>`;
+                document.getElementById('events-message').innerHTML = '<div class="alert alert-warning">⚠️ Adicione pelo menos uma variante</div>';
                 return;
             }
             
             try {
-                const response = await fetch(`${API_URL}/experiments/${expId}/events`, {
+                const response = await fetch(API_URL + '/events', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        date: date,
-                        variants: variants
-                    })
+                    body: JSON.stringify({ experiment_id: parseInt(expId), date: date, variants: variants })
                 });
                 
                 const result = await response.json();
                 const messageDiv = document.getElementById('events-message');
                 
                 if (response.ok) {
-                    messageDiv.innerHTML = `<div class="alert alert-success">✅ Dados enviados com sucesso!</div>`;
-                    // Reset form
+                    messageDiv.innerHTML = '<div class="alert alert-success">✅ Dados enviados com sucesso!</div>';
                     document.getElementById('variants-list').innerHTML = '';
                     addVariant('control', 1000, 70, 63);
                     addVariant('variant_a', 1000, 95, 86);
                 } else {
-                    messageDiv.innerHTML = `<div class="alert alert-danger">❌ Erro: ${result.detail}</div>`;
+                    messageDiv.innerHTML = '<div class="alert alert-danger">❌ Erro: ' + result.detail + '</div>';
                 }
             } catch (error) {
-                document.getElementById('events-message').innerHTML = `<div class="alert alert-danger">❌ Erro de conexão: ${error.message}</div>`;
+                document.getElementById('events-message').innerHTML = '<div class="alert alert-danger">❌ Erro de conexão: ' + error.message + '</div>';
             }
         }
         
@@ -931,7 +499,7 @@
             const file = fileInput.files[0];
             
             if (!file) {
-                document.getElementById('csv-upload-message').innerHTML = `<div class="alert alert-warning">⚠️ Selecione um arquivo CSV</div>`;
+                document.getElementById('csv-upload-message').innerHTML = '<div class="alert alert-warning">⚠️ Selecione um arquivo CSV</div>';
                 return;
             }
             
@@ -939,7 +507,7 @@
             formData.append('file', file);
             
             try {
-                const response = await fetch(`${API_URL}/experiments/upload-csv`, {
+                const response = await fetch(API_URL + '/upload-data', {
                     method: 'POST',
                     body: formData
                 });
@@ -948,14 +516,14 @@
                 const messageDiv = document.getElementById('csv-upload-message');
                 
                 if (response.ok) {
-                    messageDiv.innerHTML = `<div class="alert alert-success">✅ Arquivo enviado com sucesso! ${result.processed} registros processados.</div>`;
+                    messageDiv.innerHTML = '<div class="alert alert-success">✅ Arquivo enviado com sucesso! ' + result.processed_rows + ' registros processados.</div>';
                     fileInput.value = '';
                     loadAllExperiments();
                 } else {
-                    messageDiv.innerHTML = `<div class="alert alert-danger">❌ Erro: ${result.detail}</div>`;
+                    messageDiv.innerHTML = '<div class="alert alert-danger">❌ Erro: ' + result.detail + '</div>';
                 }
             } catch (error) {
-                document.getElementById('csv-upload-message').innerHTML = `<div class="alert alert-danger">❌ Erro de conexão: ${error.message}</div>`;
+                document.getElementById('csv-upload-message').innerHTML = '<div class="alert alert-danger">❌ Erro de conexão: ' + error.message + '</div>';
             }
         }
         
@@ -964,16 +532,16 @@
             const windowDays = document.getElementById('window-days').value;
             
             try {
-                const response = await fetch(`${API_URL}/experiments/${expId}/allocation?window_days=${windowDays}`);
+                const response = await fetch(API_URL + '/allocation?experiment_id=' + expId + '&window_days=' + windowDays);
                 const result = await response.json();
                 
                 if (response.ok) {
                     displayAllocation(result);
                 } else {
-                    alert(`❌ Erro: ${result.detail}`);
+                    alert('❌ Erro: ' + result.detail);
                 }
             } catch (error) {
-                alert(`❌ Erro de conexão: ${error.message}`);
+                alert('❌ Erro de conexão: ' + error.message);
             }
         }
         
@@ -982,296 +550,129 @@
             const ctrDisplay = document.getElementById('ctr-allocation-display');
             const conversionDisplay = document.getElementById('conversion-allocation-display');
             
-            // CTR-based allocation
+            const variants = data.summary ? data.summary.variants : data.variants;
+            const allocations = data.allocations || {};
+            
+            // CTR-based allocation display
             let ctrHtml = '';
-            data.variants.forEach(variant => {
-                const allocation = (variant.allocation_percentage * 100).toFixed(1);
-                const ctr = (variant.ctr * 100).toFixed(2);
-                ctrHtml += `
-                    <div class="allocation-item">
-                        <div class="allocation-name">${variant.variant_name}</div>
-                        <div class="allocation-value">${allocation}%</div>
-                        <div class="allocation-stats">
-                            CTR: ${ctr}%<br>
-                            Impressões: ${variant.total_impressions}<br>
-                            Cliques: ${variant.total_clicks}
-                        </div>
-                    </div>
-                `;
+            variants.forEach(function(variant) {
+                const allocation = allocations[variant.name] ? (allocations[variant.name] * 100).toFixed(1) : '0';
+                const ctr = variant.impressions > 0 ? (variant.clicks / variant.impressions * 100).toFixed(2) : '0.00';
+                ctrHtml += '<div class="allocation-item">' +
+                    '<div class="allocation-name">' + variant.name + '</div>' +
+                    '<div class="allocation-value">' + allocation + '%</div>' +
+                    '<div class="allocation-stats">CTR: ' + ctr + '%<br>Impressões: ' + variant.impressions + '<br>Cliques: ' + variant.clicks + '</div>' +
+                    '</div>';
             });
             ctrDisplay.innerHTML = ctrHtml;
             
-            // Conversion-based allocation (CTR + Conversion)
+            // Conversion-based allocation display
             let conversionHtml = '';
-            data.variants.forEach(variant => {
-                // Calculate combined metric (CTR * Conversion Rate)
-                const conversionRate = variant.total_conversions / variant.total_clicks || 0;
-                const combinedScore = variant.ctr * conversionRate;
-                const totalCombined = data.variants.reduce((sum, v) => {
-                    const vConvRate = v.total_conversions / v.total_clicks || 0;
-                    return sum + (v.ctr * vConvRate);
-                }, 0);
-                const conversionAllocation = totalCombined > 0 ? (combinedScore / totalCombined * 100) : 50;
+            let totalCombinedScore = 0;
+            const variantScores = [];
+            
+            variants.forEach(function(variant) {
+                const ctr = variant.impressions > 0 ? variant.clicks / variant.impressions : 0;
+                const conversionRate = variant.clicks > 0 ? variant.conversions / variant.clicks : 0;
+                const combinedScore = ctr * conversionRate;
+                totalCombinedScore += combinedScore;
+                variantScores.push({ variant: variant, combinedScore: combinedScore, ctr: ctr, conversionRate: conversionRate });
+            });
+            
+            variantScores.forEach(function(scoreData) {
+                const variant = scoreData.variant;
+                const combinedScore = scoreData.combinedScore;
+                const ctr = scoreData.ctr;
+                const conversionRate = scoreData.conversionRate;
                 
-                const convRatePercent = (conversionRate * 100).toFixed(2);
-                conversionHtml += `
-                    <div class="allocation-item conversion">
-                        <div class="allocation-name">${variant.variant_name}</div>
-                        <div class="allocation-value">${conversionAllocation.toFixed(1)}%</div>
-                        <div class="allocation-stats">
-                            Taxa Conversão: ${convRatePercent}%<br>
-                            Conversões: ${variant.total_conversions}<br>
-                            Score Combinado: ${(combinedScore * 100).toFixed(3)}
-                        </div>
-                    </div>
-                `;
+                const conversionAllocation = totalCombinedScore > 0 ? (combinedScore / totalCombinedScore * 100) : (100 / variants.length);
+                conversionHtml += '<div class="allocation-item conversion">' +
+                    '<div class="allocation-name">' + variant.name + '</div>' +
+                    '<div class="allocation-value">' + conversionAllocation.toFixed(1) + '%</div>' +
+                    '<div class="allocation-stats">CTR: ' + (ctr * 100).toFixed(2) + '%<br>Conversões: ' + (conversionRate * 100).toFixed(2) + '%<br>Score: ' + combinedScore.toFixed(4) + '</div>' +
+                    '</div>';
             });
             conversionDisplay.innerHTML = conversionHtml;
             
             resultsDiv.style.display = 'block';
-            updateHeaderStats(data);
-        }
-        
-        function updateHeaderStats(data) {
-            const totalImpressions = data.variants.reduce((sum, v) => sum + v.total_impressions, 0);
-            const totalClicks = data.variants.reduce((sum, v) => sum + v.total_clicks, 0);
-            const totalConversions = data.variants.reduce((sum, v) => sum + v.total_conversions, 0);
-            const avgCTR = totalImpressions > 0 ? (totalClicks / totalImpressions * 100) : 0;
-            const avgConversion = totalClicks > 0 ? (totalConversions / totalClicks * 100) : 0;
-            
-            document.getElementById('total-impressions').textContent = totalImpressions.toLocaleString();
-            document.getElementById('avg-ctr').textContent = avgCTR.toFixed(2) + '%';
-            document.getElementById('avg-conversion').textContent = avgConversion.toFixed(2) + '%';
-            
-            // Update best variant
-            const bestVariant = data.variants.reduce((best, current) => 
-                current.ctr > best.ctr ? current : best
-            );
-            document.getElementById('best-variant').textContent = bestVariant.variant_name;
-            
-            // Calculate confidence (simplified)
-            const confidence = Math.min(95, Math.max(50, totalImpressions / 1000 * 10));
-            document.getElementById('confidence-level').textContent = confidence.toFixed(0) + '%';
         }
         
         async function loadAllExperiments() {
             try {
-                const response = await fetch(`${API_URL}/experiments`);
+                const response = await fetch(API_URL + '/experiments/');
                 if (response.ok) {
-                    allExperiments = await response.json();
-                    document.getElementById('total-experiments').textContent = allExperiments.length;
+                    const experiments = await response.json();
+                    allExperiments = experiments;
+                    updateHeaderStats(experiments);
+                } else {
+                    console.error('Failed to load experiments');
                 }
             } catch (error) {
                 console.error('Error loading experiments:', error);
             }
         }
         
-        // Theme Management
-        function initializeTheme() {
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            document.documentElement.setAttribute('data-theme', savedTheme);
-            updateThemeButton(savedTheme);
-        }
-        
-        function toggleTheme() {
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        function updateHeaderStats(experiments) {
+            const totalExperiments = experiments.length;
+            let totalImpressions = 0;
+            let totalClicks = 0;
+            let totalConversions = 0;
             
-            document.documentElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-            updateThemeButton(newTheme);
-        }
-        
-        function updateThemeButton(theme) {
-            const themeIcon = document.getElementById('theme-icon');
-            const themeText = document.getElementById('theme-text');
-            
-            if (theme === 'dark') {
-                themeIcon.textContent = '☀️';
-                themeText.textContent = 'Light Mode';
-            } else {
-                themeIcon.textContent = '🌙';
-                themeText.textContent = 'Dark Mode';
-            }
-        }
-        
-        // Tab switching
-        function switchTab(event, tabName) {
-            // Hide all tabs
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            // Remove active from all tab buttons
-            document.querySelectorAll('.tab').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            // Show selected tab
-            document.getElementById(`${tabName}-tab`).classList.add('active');
-            // Mark button as active
-            event.target.classList.add('active');
-            
-            // Load analysis data when switching to analysis tab
-            if (tabName === 'analysis' && currentExperimentData) {
-                updateAnalysisCharts();
-            }
-        }
-        
-        // Initialize Charts
-        function initializeCharts() {
-            // CTR Chart
-            const ctrCtx = document.getElementById('ctr-chart').getContext('2d');
-            charts.ctr = new Chart(ctrCtx, {
-                type: 'line',
-                data: {
-                    labels: [],
-                    datasets: []
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: { callback: value => value.toFixed(1) + '%' }
-                        }
-                    }
+            experiments.forEach(function(exp) {
+                if (exp.metrics) {
+                    exp.metrics.forEach(function(metric) {
+                        totalImpressions += metric.impressions;
+                        totalClicks += metric.clicks;
+                        totalConversions += metric.conversions;
+                    });
                 }
             });
             
-            // Allocation Chart
-            const allocCtx = document.getElementById('allocation-chart').getContext('2d');
-            charts.allocation = new Chart(allocCtx, {
-                type: 'line',
-                data: {
-                    labels: [],
-                    datasets: []
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 100,
-                            ticks: { callback: value => value + '%' }
-                        }
-                    }
-                }
-            });
+            const avgCTR = totalImpressions > 0 ? (totalClicks / totalImpressions * 100).toFixed(2) : '0.00';
+            const avgConversion = totalClicks > 0 ? (totalConversions / totalClicks * 100).toFixed(2) : '0.00';
             
-            // Regret Chart
-            const regretCtx = document.getElementById('regret-chart').getContext('2d');
-            charts.regret = new Chart(regretCtx, {
-                type: 'line',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        label: 'Regret Acumulado',
-                        data: [],
-                        borderColor: '#e74c3c',
-                        backgroundColor: 'rgba(231, 76, 60, 0.1)',
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false
-                }
-            });
-            
-            // Confidence Chart
-            const confCtx = document.getElementById('confidence-chart').getContext('2d');
-            charts.confidence = new Chart(confCtx, {
-                type: 'bar',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        label: 'CTR com Intervalo de Confiança',
-                        data: [],
-                        backgroundColor: 'rgba(74, 144, 226, 0.6)',
-                        borderColor: '#4a90e2',
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: { callback: value => value.toFixed(1) + '%' }
-                        }
-                    }
-                }
-            });
+            document.getElementById('total-experiments').textContent = totalExperiments;
+            document.getElementById('total-impressions').textContent = totalImpressions.toLocaleString();
+            document.getElementById('avg-ctr').textContent = avgCTR + '%';
+            document.getElementById('avg-conversion').textContent = avgConversion + '%';
         }
         
-        // Variants Management
-        function addVariant(name = '', impressions = '', clicks = '', conversions = '') {
-            const container = document.getElementById('variants-list');
+        function addVariant(name = '', impressions = 1000, clicks = 50, conversions = 45) {
+            const variantsList = document.getElementById('variants-list');
             const variantDiv = document.createElement('div');
             variantDiv.className = 'variant-row';
-            variantDiv.style.marginBottom = '0.5rem';
-            variantDiv.innerHTML = `
-                <input type="text" class="form-control" placeholder="Nome da Variante" value="${name}" required>
-                <input type="number" class="form-control" placeholder="Impressões" value="${impressions}" min="0" required>
-                <input type="number" class="form-control" placeholder="Cliques" value="${clicks}" min="0" required>
-                <input type="number" class="form-control" placeholder="Conversões" value="${conversions}" min="0" required>
-                <button type="button" class="btn btn-danger btn-sm" onclick="this.closest('.variant-row').remove()">×</button>
-            `;
-            container.appendChild(variantDiv);
+            variantDiv.innerHTML = 
+                '<input type="text" class="form-control" placeholder="Nome da variante" value="' + name + '" required>' +
+                '<input type="number" class="form-control" placeholder="Impressões" value="' + impressions + '" min="0" required>' +
+                '<input type="number" class="form-control" placeholder="Cliques" value="' + clicks + '" min="0" required>' +
+                '<input type="number" class="form-control" placeholder="Conversões" value="' + conversions + '" min="0" required>' +
+                '<button type="button" class="btn btn-danger btn-sm" onclick="removeVariant(this)">✕</button>';
+            variantsList.appendChild(variantDiv);
         }
         
-        // Language Management
-        function initializeLanguage() {
-            const savedLang = localStorage.getItem('language') || 'pt';
-            updateLanguage(savedLang);
+        function removeVariant(button) {
+            button.parentElement.remove();
         }
         
-        function toggleLanguage() {
-            const currentLang = localStorage.getItem('language') || 'pt';
-            const newLang = currentLang === 'pt' ? 'en' : 'pt';
-            
-            localStorage.setItem('language', newLang);
-            updateLanguage(newLang);
-        }
-        
-        function updateLanguage(lang) {
-            // Update all elements with data-pt and data-en attributes
-            document.querySelectorAll('[data-pt][data-en]').forEach(element => {
-                element.textContent = element.getAttribute(`data-${lang}`);
-            });
-            
-            // Update language button
-            const langIcon = document.getElementById('lang-icon');
-            const langText = document.getElementById('lang-text');
-            
-            if (lang === 'en') {
-                langText.textContent = 'Português';
-                document.documentElement.setAttribute('lang', 'en');
-            } else {
-                langText.textContent = 'English';
-                document.documentElement.setAttribute('lang', 'pt-br');
-            }
-        }
-        
-        // Load Sample Data
         function loadSampleData() {
-            document.getElementById('variants-list').innerHTML = '';
-            addVariant('control', 10000, 700, 630);
-            addVariant('variant_a', 10000, 950, 855);
-            
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('event-date').value = today;
             document.getElementById('event-exp-id').value = '1';
+            document.getElementById('event-date').value = new Date().toISOString().split('T')[0];
+            
+            const variantsList = document.getElementById('variants-list');
+            variantsList.innerHTML = '';
+            addVariant('control', 2000, 140, 126);
+            addVariant('variant_a', 2000, 190, 172);
+            addVariant('variant_b', 2000, 165, 149);
         }
         
         function downloadTemplate() {
-            const csvContent = `experiment_id,date,variant_name,impressions,clicks,conversions
-1,2025-01-15,control,10000,700,630
-1,2025-01-15,variant_a,10000,950,855`;
+            const csvContent = 'experiment_id,date,variant_name,impressions,clicks,conversions\n' +
+                '1,2025-01-15,control,1000,70,63\n' +
+                '1,2025-01-15,variant_a,1000,95,86\n' +
+                '1,2025-01-16,control,1200,84,75\n' +
+                '1,2025-01-16,variant_a,1200,114,102';
             
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const blob = new Blob([csvContent], { type: 'text/csv' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.style.display = 'none';
@@ -1283,32 +684,155 @@
             document.body.removeChild(a);
         }
         
-        function runSimulation() {
-            document.getElementById('simulation-results').style.display = 'block';
+        function switchTab(event, tabName) {
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabs.forEach(function(tab) {
+                tab.classList.remove('active');
+            });
+            
+            tabContents.forEach(function(content) {
+                content.classList.remove('active');
+            });
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName + '-tab').classList.add('active');
+        }
+        
+        function initializeTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.setAttribute('data-theme', 'dark');
+                document.getElementById('theme-icon').textContent = '☀️';
+                document.getElementById('theme-text').textContent = 'Light Mode';
+            }
+        }
+        
+        function toggleTheme() {
+            const currentTheme = document.body.getAttribute('data-theme');
+            const themeIcon = document.getElementById('theme-icon');
+            const themeText = document.getElementById('theme-text');
+            
+            if (currentTheme === 'dark') {
+                document.body.removeAttribute('data-theme');
+                themeIcon.textContent = '🌙';
+                themeText.textContent = 'Dark Mode';
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.body.setAttribute('data-theme', 'dark');
+                themeIcon.textContent = '☀️';
+                themeText.textContent = 'Light Mode';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+        
+        function initializeLanguage() {
+            const savedLang = localStorage.getItem('language') || 'pt';
+            currentLanguage = savedLang;
+            updateLanguage();
+        }
+        
+        function toggleLanguage() {
+            currentLanguage = currentLanguage === 'pt' ? 'en' : 'pt';
+            localStorage.setItem('language', currentLanguage);
+            updateLanguage();
+        }
+        
+        function updateLanguage() {
+            const langText = document.getElementById('lang-text');
+            langText.textContent = currentLanguage === 'pt' ? 'English' : 'Português';
+            
+            const labels = document.querySelectorAll('.stat-label');
+            labels[0].textContent = translations[currentLanguage].experiments;
+            labels[1].textContent = translations[currentLanguage].totalImpressions;
+            labels[2].textContent = translations[currentLanguage].avgCTR;
+            labels[3].textContent = translations[currentLanguage].avgConversion;
+            
+            const metricLabels = document.querySelectorAll('.metric-label');
+            metricLabels[0].textContent = translations[currentLanguage].bestVariant;
+            metricLabels[1].textContent = translations[currentLanguage].confidence;
+            metricLabels[2].textContent = translations[currentLanguage].cumulativeRegret;
+            metricLabels[3].textContent = translations[currentLanguage].convergenceRate;
+        }
+        
+        function initializeCharts() {
+            const ctrCtx = document.getElementById('ctr-chart').getContext('2d');
+            charts.ctrChart = new Chart(ctrCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: []
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: { display: true, text: 'CTR por Variante' }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, title: { display: true, text: 'CTR (%)' } }
+                    }
+                }
+            });
+            
+            const allocCtx = document.getElementById('allocation-chart').getContext('2d');
+            charts.allocationChart = new Chart(allocCtx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Alocação (%)',
+                        data: [],
+                        backgroundColor: ['#4a90e2', '#5cb85c', '#f0ad4e', '#d9534f']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: { display: true, text: 'Distribuição de Alocação' }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, max: 100, title: { display: true, text: 'Alocação (%)' } }
+                    }
+                }
+            });
         }
         
         function saveSettings() {
             const settings = {
-                alphaPrior: document.getElementById('alpha-prior').value,
-                betaPrior: document.getElementById('beta-prior').value,
-                minExplore: document.getElementById('min-explore').value,
-                controlFloor: document.getElementById('control-floor').value
+                alpha_prior: parseFloat(document.getElementById('alpha-prior').value),
+                beta_prior: parseFloat(document.getElementById('beta-prior').value),
+                min_explore_rate: parseFloat(document.getElementById('min-explore').value) / 100,
+                control_floor: parseFloat(document.getElementById('control-floor').value) / 100
             };
             
-            localStorage.setItem('bandit-settings', JSON.stringify(settings));
-            alert('✅ Configurações salvas!');
+            localStorage.setItem('banditSettings', JSON.stringify(settings));
+            document.getElementById('settings-message').innerHTML = '<div class="alert alert-success">✅ Configurações salvas!</div>';
+            
+            setTimeout(function() {
+                document.getElementById('settings-message').innerHTML = '';
+            }, 3000);
         }
         
-        function resetAllData() {
-            if (confirm('⚠️ Isso irá apagar TODOS os dados salvos. Tem certeza?')) {
-                localStorage.clear();
-                location.reload();
+        async function resetAllData() {
+            if (confirm('⚠️ Esta ação irá deletar todos os dados. Tem certeza?')) {
+                try {
+                    const response = await fetch(API_URL + '/dashboard/reset', {
+                        method: 'DELETE'
+                    });
+                    
+                    if (response.ok) {
+                        alert('✅ Todos os dados foram deletados!');
+                        location.reload();
+                    } else {
+                        alert('❌ Erro ao deletar dados');
+                    }
+                } catch (error) {
+                    alert('❌ Erro de conexão: ' + error.message);
+                }
             }
-        }
-        
-        function updateAnalysisCharts() {
-            // Placeholder for analysis charts update
-            console.log('Updating analysis charts...');
         }
     </script>
 </body>
