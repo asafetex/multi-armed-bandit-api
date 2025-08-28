@@ -1,0 +1,5 @@
+experiment_id,date,variant_name,impressions,clicks,conversions
+1,2025-08-28,control,100,15,3
+1,2025-08-28,treatment,120,22,6
+1,2025-08-27,control,95,12,2
+1,2025-08-27,treatment,110,25,8

@@ -3,7 +3,10 @@ SQLAlchemy models for Multi-Armed Bandit API
 Efficient database schema for experiment tracking
 """
 
-from sqlalchemy import Column, Integer, String, DateTime, Date, JSON, Float, ForeignKey, Index
+from sqlalchemy import Column, Integer, String, DateTime, Date, JSON, Float, ForeignKey, Index, Text
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.ext.mutable import MutableDict
+import os
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from app.core.database import Base
@@ -55,7 +58,12 @@ class Allocation(Base):
     experiment_id = Column(Integer, ForeignKey("experiments.id"), nullable=False)
     target_date = Column(Date, nullable=False)
     algorithm = Column(String(50), default="thompson_sampling")
-    allocations = Column(JSON)  # {"variant_name": percentage}
+    # Use JSONB for PostgreSQL (Render) or JSON for SQLite (local development)
+    allocations = Column(
+        MutableDict.as_mutable(JSONB) if 'postgresql' in os.getenv('DATABASE_URL', '') or 'postgres' in os.getenv('DATABASE_URL', '') 
+        else JSON, 
+        nullable=True
+    )  # {"variant_name": percentage}
     window_days = Column(Integer, default=14)
     total_impressions = Column(Integer, default=0)
     total_clicks = Column(Integer, default=0)
