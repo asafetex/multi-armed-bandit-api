@@ -1,417 +1,228 @@
 # Multi-Armed Bandit Optimization API
 
-[![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://python.org)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-green.svg)](https://fastapi.tiangolo.com)
-[![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://docker.com)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Deploy](https://img.shields.io/badge/Deploy-Render-46E3B7.svg)](https://render.com)
+A RESTful API that implements Multi-Armed Bandit algorithms (Thompson Sampling and Upper Confidence Bound) for A/B testing optimization with SQL integration. The system processes temporal experiment data and returns optimal traffic allocation percentages for control and variant groups.
 
-A complete API for A/B test optimization using Thompson Sampling algorithm, with an interactive dashboard for performance analysis and traffic allocation.
+## 🚀 Live Demo
 
-> 🎯 **Optimize your A/B tests automatically** - Let the Thompson Sampling algorithm find the best variant for you, minimizing regret and maximizing conversions.
+- **API**: https://multi-armed-bandit-api.onrender.com
+- **Interactive Dashboard**: https://multi-armed-bandit-api.onrender.com/dashboard
+- **API Documentation**: https://multi-armed-bandit-api.onrender.com/docs
 
-## 🎯 Overview
+## 📋 Features
 
-This project implements a robust solution for A/B test optimization using the Multi-Armed Bandit algorithm (Thompson Sampling). The solution provides:
+- **Thompson Sampling Algorithm**: Bayesian approach for optimal traffic allocation
+- **Upper Confidence Bound (UCB)**: Alternative algorithm for exploration-exploitation balance
+- **Multi-Variant Support**: Handle A/B/n tests with multiple variants
+- **Real-time Dashboard**: Interactive visualization of experiment performance
+- **SQL Integration**: PostgreSQL database for data persistence and analysis
+- **RESTful API**: Clean endpoints for experiment management
+- **Statistical Analysis**: Confidence intervals, conversion rates, and performance metrics
 
-- **Dynamic traffic allocation** based on real-time performance
-- **Regret minimization** through intelligent exploration
-- **Interactive dashboard** for data visualization and analysis
-- **RESTful API** for integration with existing systems
-- **Production-ready deployment** on Render platform
+## 🛠️ Technology Stack
 
-## 🚀 Features
+- **Backend**: FastAPI (Python 3.11)
+- **Database**: PostgreSQL
+- **ORM**: SQLAlchemy
+- **Algorithms**: NumPy, SciPy for statistical computations
+- **Frontend**: HTML5, JavaScript, Chart.js for visualizations
+- **Deployment**: Docker, Render.com
 
-### API Backend
-- ✅ A/B experiment creation and management
-- ✅ Temporal metrics collection (impressions, clicks, conversions)
-- ✅ Thompson Sampling algorithm for optimal allocation
-- ✅ Allocation and performance history
-- ✅ Data reset and cleanup endpoints
-- ✅ Comprehensive health checks
-- ✅ Production logging and monitoring
+## 📊 API Endpoints
 
-### Dashboard Frontend
-- ✅ Modern and responsive interface with **Dark Mode** 🌙
-- ✅ Interactive charts (CTR, Allocation, Regret, Confidence)
-- ✅ Scenario simulator
-- ✅ Advanced algorithm settings
-- ✅ Real-time performance analysis
-- ✅ Elegant theme switching with persistent preferences
-- ✅ Professional dark theme with smooth transitions
+### Core Endpoints
 
-### Production Features
-- ✅ Database connection pooling
-- ✅ Structured logging
-- ✅ Health check endpoints
-- ✅ Environment-based configuration
-- ✅ Docker containerization
-- ✅ Render deployment ready
+- `POST /api/v1/experiments/` - Create new experiment
+- `GET /api/v1/experiments/` - List all experiments
+- `GET /api/v1/experiments/{experiment_id}` - Get experiment details
+- `POST /api/v1/experiments/{experiment_id}/data` - Submit experiment data
+- `GET /api/v1/experiments/{experiment_id}/allocation` - Get traffic allocation recommendations
+- `GET /api/v1/experiments/{experiment_id}/statistics` - Get detailed statistics
 
-## 🏗️ Architecture
+### Dashboard
 
-```
-├── app/
-│   ├── main.py              # FastAPI application with health checks
-│   ├── models.py            # SQLAlchemy models
-│   ├── schemas.py           # Pydantic schemas
-│   ├── crud.py              # Database operations
-│   ├── core/
-│   │   ├── database.py      # Database config with connection pooling
-│   │   └── config.py        # Production-ready settings
-│   └── services/
-│       └── bandit.py        # Thompson Sampling algorithm
-├── scripts/
-│   ├── example_requests.py  # API usage examples
-│   └── init.sql            # Database initialization
-├── bandit-dashboard.html    # Interactive dashboard
-├── docker-compose.yml      # Container orchestration
-├── Dockerfile              # Production-ready container
-├── render.yaml             # Render deployment config
-├── requirements.txt        # Python dependencies
-├── .env.example            # Environment variables template
-├── RENDER_DEPLOY.md        # Deployment guide
-└── DEPLOY_CHECKLIST.md     # Pre-deployment checklist
-```
+- `GET /dashboard` - Interactive experiment dashboard
 
-## 🛠️ Technologies
-
-**Backend:**
-- **FastAPI** - Modern, fast web framework
-- **SQLAlchemy** - ORM with connection pooling
-- **PostgreSQL** - Relational database
-- **Pydantic** - Data validation
-- **NumPy** - Scientific computing
-
-**Frontend:**
-- **HTML5/CSS3/JavaScript** - Modern interface
-- **Chart.js** - Interactive visualizations
-- **Responsive Design** - Mobile-friendly
-
-**DevOps:**
-- **Docker & Docker Compose** - Containerization
-- **Render** - Cloud deployment platform
-- **PostgreSQL** - Managed database
-
-## 🚀 Quick Start
-
-### Prerequisites
-- Docker and Docker Compose
-- Git
+## 🔧 Installation
 
 ### Local Development
 
-1. **Clone the repository:**
+1. Clone the repository:
 ```bash
 git clone https://github.com/asafetex/multi-armed-bandit-api.git
 cd multi-armed-bandit-api
 ```
 
-2. **Start the containers:**
+2. Create virtual environment:
 ```bash
-docker compose up --build -d
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
-3. **Access the application:**
-- **Dashboard:** http://localhost:8000/dashboard
-- **API Docs:** http://localhost:8000/docs
-- **Health Check:** http://localhost:8000/health
-- **API:** http://localhost:8000
+3. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
 
-### Production Deployment on Render
+4. Set up environment variables:
+```bash
+cp .env.example .env
+# Edit .env with your database credentials
+```
 
-1. **Fork this repository to your GitHub account**
+5. Run the application:
+```bash
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
 
-2. **Deploy on Render:**
-   - Go to [Render Dashboard](https://dashboard.render.com)
-   - Click "New +" → "Blueprint"
-   - Connect your GitHub repository
-   - Select `multi-armed-bandit-api`
-   - Click "Apply"
+### Docker Deployment
 
-3. **Access your deployed application:**
-   - **API:** `https://your-app-name.onrender.com`
-   - **Dashboard:** `https://your-app-name.onrender.com/dashboard`
-   - **API Docs:** `https://your-app-name.onrender.com/docs`
-   - **Health Check:** `https://your-app-name.onrender.com/health`
+```bash
+docker-compose up -d
+```
 
-For detailed deployment instructions, see [RENDER_DEPLOY.md](RENDER_DEPLOY.md).
-
-## 📊 How to Use
+## 📝 Usage Example
 
 ### 1. Create an Experiment
-```python
-import requests
 
-response = requests.post("http://localhost:8000/experiments", json={
-    "name": "Homepage Button Test",
-    "description": "A/B test for main button"
-})
-experiment_id = response.json()["id"]
+```bash
+curl -X POST "https://multi-armed-bandit-api.onrender.com/api/v1/experiments/" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Homepage CTA Test",
+    "description": "Testing different call-to-action buttons",
+    "variants": ["Control", "Variant A", "Variant B"],
+    "algorithm": "thompson_sampling"
+  }'
 ```
 
-### 2. Send Performance Data
-```python
-requests.post("http://localhost:8000/events", json={
-    "experiment_id": experiment_id,
-    "date": "2024-01-15",
-    "variants": [
-        {"variant_name": "control", "impressions": 10000, "clicks": 700},
-        {"variant_name": "variant_b", "impressions": 10000, "clicks": 950}
-    ]
-})
+### 2. Submit Experiment Data
+
+```bash
+curl -X POST "https://multi-armed-bandit-api.onrender.com/api/v1/experiments/1/data" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "date": "2025-01-28",
+    "variant": "Control",
+    "impressions": 1000,
+    "conversions": 50
+  }'
 ```
 
-### 3. Get Optimal Allocation
-```python
-response = requests.get(f"http://localhost:8000/allocation?experiment_id={experiment_id}")
-allocations = response.json()["allocations"]
-# {"control": 0.25, "variant_b": 0.75}
+### 3. Get Traffic Allocation
+
+```bash
+curl "https://multi-armed-bandit-api.onrender.com/api/v1/experiments/1/allocation"
 ```
 
-## 🎮 Interactive Dashboard
+Response:
+```json
+{
+  "allocations": {
+    "Control": 25.5,
+    "Variant A": 45.2,
+    "Variant B": 29.3
+  },
+  "algorithm": "thompson_sampling",
+  "confidence_level": 0.95
+}
+```
 
-The dashboard provides a complete interface for:
+## 🗄️ Database Schema
 
-### Experiments
-- Create new experiments
-- Send performance data
-- Calculate optimal allocations
+```sql
+-- Experiments table
+CREATE TABLE experiments (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    variants TEXT[],
+    algorithm VARCHAR(50),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
-### Analysis
-- **CTR Performance:** Conversion rate evolution
-- **Allocation Evolution:** How the algorithm adapts traffic
-- **Regret Analysis:** Accumulated opportunity cost
-- **Confidence Intervals:** Statistical significance
+-- Experiment data table
+CREATE TABLE experiment_data (
+    id SERIAL PRIMARY KEY,
+    experiment_id INTEGER REFERENCES experiments(id),
+    date DATE NOT NULL,
+    variant VARCHAR(100) NOT NULL,
+    impressions INTEGER NOT NULL,
+    conversions INTEGER NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
 
-### Simulation
-- Test hypothetical scenarios
-- Visualize algorithm convergence
-- Comparative performance analysis
+## 🧮 Algorithms
 
-## 🧮 Thompson Sampling Algorithm
+### Thompson Sampling
+- Bayesian approach using Beta distributions
+- Balances exploration and exploitation naturally
+- Converges to optimal allocation over time
 
-The implemented algorithm uses:
+### Upper Confidence Bound (UCB)
+- Deterministic algorithm with confidence intervals
+- Provides theoretical guarantees on regret
+- Suitable for scenarios requiring predictable behavior
 
-- **Beta Distribution** to model uncertainty
-- **Exploration vs Exploitation** balance
-- **Minimum allocation** for control (configurable)
-- **Adaptive exploration rate**
-- **Convergence** to optimal variant
+## 📈 Performance Metrics
 
-### Configurable Parameters
-- `alpha_prior`: Beta distribution prior (default: 1.0)
-- `beta_prior`: Beta distribution prior (default: 1.0)
-- `min_explore_rate`: Minimum exploration rate (default: 5%)
-- `control_floor`: Minimum control allocation (default: 10%)
+The API tracks and returns:
+- **Conversion Rate (CTR)**: Conversions / Impressions
+- **Confidence Intervals**: Statistical bounds on true conversion rate
+- **Regret Minimization**: Optimal traffic allocation to maximize conversions
+- **Sample Size**: Automatic calculation for statistical significance
 
-## 📈 Metrics and KPIs
-
-### Key Metrics
-- **CTR (Click-Through Rate):** Conversion rate per variant
-- **Cumulative Regret:** Total opportunity loss
-- **Convergence Rate:** Optimization speed
-- **Confidence Interval:** Statistical significance
-
-### Visualizations
-- Line charts for temporal evolution
-- Bar charts for comparison
-- Detailed tables with raw data
-- Interactive simulations
-
-## 🔧 Configuration
-
-### Environment Variables
-
-Copy `.env.example` to `.env` and configure:
+## 🔐 Environment Variables
 
 ```env
-# Database Configuration
-DATABASE_URL=postgresql://username:password@host:port/database
-
-# Application Settings
+DATABASE_URL=postgresql://user:password@localhost/bandit_db
+API_V1_STR=/api/v1
+PROJECT_NAME=Multi-Armed-Bandit-API
 DEBUG=False
-ENVIRONMENT=production
-
-# Algorithm Parameters
-DEFAULT_WINDOW_DAYS=14
-MIN_IMPRESSIONS_FOR_OPTIMIZATION=1000
-
-# Thompson Sampling Parameters
-ALPHA_PRIOR=1.0
-BETA_PRIOR=1.0
-MIN_EXPLORE_RATE=0.05
-CONTROL_FLOOR=0.1
-MAX_DAILY_SHIFT=0.2
 ```
 
-### Algorithm Customization
-```python
-# In app/services/bandit.py
-class ThompsonSampling:
-    def __init__(self):
-        self.alpha_prior = 1.0      # Adjust for different priors
-        self.beta_prior = 1.0       # Adjust for different priors
-        self.min_explore_rate = 0.05 # Minimum exploration rate
-        self.control_floor = 0.10    # Control floor
-```
+## 🧪 Testing
 
-## 🧪 Testing and Examples
-
-Run usage examples:
+Run tests with pytest:
 ```bash
-python scripts/example_requests.py
+pytest tests/
 ```
 
-## 📚 API Reference
+## 📚 API Documentation
 
-### Main Endpoints
-
-#### `GET /health`
-Comprehensive health check with database connectivity test.
-
-#### `POST /experiments`
-Create a new A/B test experiment.
-
-#### `POST /events`
-Send performance data for an experiment.
-
-#### `GET /allocation`
-Calculate optimal allocation using Thompson Sampling.
-
-#### `GET /experiments/{id}/history`
-Get allocation history for an experiment.
-
-#### `POST /reset_data`
-Clear all data (useful for development).
-
-Complete documentation available at: `/docs`
-
-## 🚀 Production Deployment
-
-### Render (Recommended)
-
-This project is optimized for Render deployment:
-
-1. **Automatic Configuration:** Uses `render.yaml` for seamless setup
-2. **Database Integration:** Automatic PostgreSQL provisioning
-3. **Environment Variables:** Pre-configured for production
-4. **Health Checks:** Built-in monitoring endpoints
-5. **Logging:** Structured logging for debugging
-
-See [RENDER_DEPLOY.md](RENDER_DEPLOY.md) for complete instructions.
-
-### Docker
-
-```bash
-# Build image
-docker build -t multi-armed-bandit-api .
-
-# Production deployment
-docker compose -f docker-compose.prod.yml up -d
-```
-
-### Kubernetes
-
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: bandit-api
-spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: bandit-api
-  template:
-    metadata:
-      labels:
-        app: bandit-api
-    spec:
-      containers:
-      - name: api
-        image: multi-armed-bandit-api:latest
-        ports:
-        - containerPort: 8000
-        env:
-        - name: DATABASE_URL
-          valueFrom:
-            secretKeyRef:
-              name: db-secret
-              key: url
-```
-
-## 🔒 Security
-
-- Input validation with Pydantic
-- SQL query sanitization
-- Rate limiting (recommended for production)
-- HTTPS (configure reverse proxy)
-- Environment-based secrets management
-
-## 📊 Monitoring
-
-### Built-in Health Checks
-- Database connectivity
-- Application status
-- Environment information
-
-### Recommended Production Metrics
-- API response latency
-- Error rate per endpoint
-- CPU and memory usage
-- Database connections
-- Algorithm performance
-
-### Logging
-Structured logging with configurable levels:
-```python
-2025-01-01 10:00:00 - app.main - INFO - Application started
-2025-01-01 10:00:01 - app.main - INFO - Database connection established
-2025-01-01 10:00:02 - app.main - INFO - Health check passed
-```
+Interactive API documentation is available at:
+- Swagger UI: https://multi-armed-bandit-api.onrender.com/docs
+- ReDoc: https://multi-armed-bandit-api.onrender.com/redoc
 
 ## 🤝 Contributing
 
-1. Fork the project
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
 3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
 ## 📄 License
 
-This project is licensed under the MIT License. See the `LICENSE` file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 👥 Author
 
 **Asafe Teixeira**
 - GitHub: [@asafetex](https://github.com/asafetex)
-- LinkedIn: [Asafe Teixeira](https://www.linkedin.com/in/asafeteixeira/)
-- Email: asafetex@gmail.com
 
 ## 🙏 Acknowledgments
 
-- FastAPI community for excellent documentation
-- Multi-Armed Bandit research papers
-- Open source community
-- Render platform for seamless deployment
+- FastAPI for the excellent web framework
+- Render.com for hosting services
+- Thompson Sampling and UCB algorithm research papers
+- Open source community for continuous support
 
-## 📋 Deployment Checklist
+## 📞 Support
 
-Before deploying to production, ensure:
-
-- ✅ All tests pass locally
-- ✅ Environment variables configured
-- ✅ Database migrations applied
-- ✅ Health checks responding
-- ✅ Logging configured
-- ✅ Security settings reviewed
-
-See [DEPLOY_CHECKLIST.md](DEPLOY_CHECKLIST.md) for complete verification.
+For issues and questions, please open an issue on GitHub or contact through the repository.
 
 ---
 
-**⭐ If this project was helpful, please consider giving it a star on GitHub!**
-
-**🚀 Ready for production deployment on Render!**
+**Note**: This API is designed for production use in A/B testing scenarios. It handles real-time traffic allocation decisions based on statistical analysis of experiment data.
