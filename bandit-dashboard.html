@@ -625,6 +625,9 @@
                     messageDiv.innerHTML = '<div class="alert alert-success">✅ Experimento "' + name + '" criado com ID: ' + result.id + '</div>';
                     document.getElementById('create-experiment-form').reset();
                     loadAllExperiments();
+                    setTimeout(() => {
+                        messageDiv.innerHTML = '';
+                    }, 3000);
                 } else {
                     messageDiv.innerHTML = '<div class="alert alert-danger">❌ Erro: ' + result.detail + '</div>';
                 }
@@ -668,6 +671,9 @@
                     document.getElementById('variants-list').innerHTML = '';
                     addVariant('control', 1000, 70, 63);
                     addVariant('variant_a', 1000, 95, 86);
+                    setTimeout(() => {
+                        messageDiv.innerHTML = '';
+                    }, 3000);
                 } else {
                     messageDiv.innerHTML = '<div class="alert alert-danger">❌ Erro: ' + result.detail + '</div>';
                 }
@@ -1254,15 +1260,16 @@
         async function resetAllData() {
             if (confirm('⚠️ Esta ação irá deletar todos os dados. Tem certeza?')) {
                 try {
-                    const response = await fetch(API_URL + '/dashboard/reset', {
-                        method: 'DELETE'
+                    const response = await fetch(API_URL + '/reset_data', {
+                        method: 'POST'
                     });
                     
                     if (response.ok) {
                         alert('✅ Todos os dados foram deletados!');
                         location.reload();
                     } else {
-                        alert('❌ Erro ao deletar dados');
+                        const result = await response.json();
+                        alert('❌ Erro ao deletar dados: ' + result.detail);
                     }
                 } catch (error) {
                     alert('❌ Erro de conexão: ' + error.message);
@@ -1459,6 +1466,10 @@
             
             document.getElementById('simulation-message').innerHTML = 
                 '<div class="alert alert-success">✅ Simulação concluída com sucesso!</div>';
+            
+            setTimeout(() => {
+                document.getElementById('simulation-message').innerHTML = '';
+            }, 5000);
         }
 
         function updateSimulationChart(allocationHistory, variants) {
