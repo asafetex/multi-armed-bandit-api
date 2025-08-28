@@ -205,7 +205,6 @@
             <button class="tab active" onclick="switchTab(event, 'experiments')">Experimentos</button>
             <button class="tab" onclick="switchTab(event, 'analysis')">Análise</button>
             <button class="tab" onclick="switchTab(event, 'simulation')">Simulação</button>
-            <button class="tab" onclick="switchTab(event, 'upload')">Teste</button>
             <button class="tab" onclick="switchTab(event, 'settings')">Configurações</button>
         </div>
         
@@ -317,68 +316,117 @@
                     <div class="chart-container"><canvas id="ctr-chart"></canvas></div>
                 </div>
                 <div class="card">
+                    <div class="card-header"><h2 class="card-title">Taxa de Conversão</h2></div>
+                    <div class="chart-container"><canvas id="conversion-chart"></canvas></div>
+                </div>
+                <div class="card">
                     <div class="card-header"><h2 class="card-title">Evolução da Alocação</h2></div>
                     <div class="chart-container"><canvas id="allocation-chart"></canvas></div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><h2 class="card-title">Comparativo de Performance</h2></div>
+                    <div class="chart-container"><canvas id="performance-chart"></canvas></div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header"><h2 class="card-title">Lista de Eventos Recentes</h2></div>
+                <div id="events-list">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Experimento</th>
+                                <th>Variante</th>
+                                <th>Impressões</th>
+                                <th>Cliques</th>
+                                <th>Conversões</th>
+                                <th>CTR</th>
+                                <th>Taxa Conv.</th>
+                            </tr>
+                        </thead>
+                        <tbody id="events-table-body">
+                            <tr><td colspan="8">Carregando dados...</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
         
         <div id="simulation-tab" class="tab-content">
-            <div class="card">
-                <div class="card-header"><h2 class="card-title">Simulador de Cenários</h2></div>
-                <p>Funcionalidade em desenvolvimento</p>
+            <div class="grid grid-2">
+                <div class="card">
+                    <div class="card-header"><h2 class="card-title">Configurar Simulação</h2></div>
+                    <form id="simulation-form">
+                        <div class="form-group">
+                            <label class="form-label">Número de Simulações</label>
+                            <input type="number" class="form-control" id="sim-runs" value="1000" min="100" max="10000">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Dias para Simular</label>
+                            <input type="number" class="form-control" id="sim-days" value="30" min="7" max="365">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Tráfego Diário</label>
+                            <input type="number" class="form-control" id="sim-traffic" value="1000" min="100" max="100000">
+                        </div>
+                        <div id="sim-variants-container">
+                            <label class="form-label">Variantes para Simular</label>
+                            <div id="sim-variants-list">
+                                <div class="variant-row">
+                                    <input type="text" class="form-control" placeholder="Nome" value="control" required>
+                                    <input type="number" class="form-control" placeholder="CTR Real (%)" value="2.5" step="0.1" min="0" max="100" required>
+                                    <input type="number" class="form-control" placeholder="Conv Rate (%)" value="15" step="0.1" min="0" max="100" required>
+                                    <input type="text" class="form-control" placeholder="Cor" value="#4a90e2" required>
+                                    <button type="button" class="btn btn-danger btn-sm" onclick="removeSimVariant(this)">✕</button>
+                                </div>
+                                <div class="variant-row">
+                                    <input type="text" class="form-control" placeholder="Nome" value="variant_a" required>
+                                    <input type="number" class="form-control" placeholder="CTR Real (%)" value="3.2" step="0.1" min="0" max="100" required>
+                                    <input type="number" class="form-control" placeholder="Conv Rate (%)" value="18" step="0.1" min="0" max="100" required>
+                                    <input type="text" class="form-control" placeholder="Cor" value="#5cb85c" required>
+                                    <button type="button" class="btn btn-danger btn-sm" onclick="removeSimVariant(this)">✕</button>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-primary" onclick="addSimVariant()">+ Adicionar Variante</button>
+                        </div>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-primary" onclick="runSimulation()">🎲 Executar Simulação</button>
+                            <button type="button" class="btn btn-warning" onclick="resetSimulation()">🔄 Limpar</button>
+                        </div>
+                        <div id="simulation-message"></div>
+                    </form>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header"><h2 class="card-title">Resultados da Simulação</h2></div>
+                    <div id="simulation-results">
+                        <div id="sim-metrics-grid" class="metrics-grid" style="display: none;">
+                            <div class="metric-card">
+                                <div class="metric-value" id="sim-best-variant">-</div>
+                                <div class="metric-label">Melhor Variante</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-value" id="sim-confidence">-</div>
+                                <div class="metric-label">Confiança</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-value" id="sim-regret">-</div>
+                                <div class="metric-label">Regret Total</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-value" id="sim-efficiency">-</div>
+                                <div class="metric-label">Eficiência</div>
+                            </div>
+                        </div>
+                        <div class="chart-container" id="sim-chart-container" style="display: none;">
+                            <canvas id="simulation-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         
-        <div id="upload-tab" class="tab-content">
-            <div class="grid grid-2">
-                <!-- Download Template -->
-                <div class="card">
-                    <div class="card-header">
-                        <h2 class="card-title">📥 Modelo de Dados</h2>
-                    </div>
-                    <div class="alert alert-warning">
-                        <strong>Estrutura do CSV:</strong><br>
-                        • experiment_id, date, variant_name, impressions, clicks, conversions<br>
-                        • Formato de data: YYYY-MM-DD<br>
-                        • Cliques ≤ Impressões, Conversões ≤ Cliques
-                    </div>
-                    <p>Baixe o modelo de dados CSV com exemplos de 14 dias de dados realistas para 3 variantes (control, variant_a, variant_b).</p>
-                    <button class="btn btn-primary" onclick="downloadTemplate()">
-                        🔽 Baixar Modelo CSV
-                    </button>
-                </div>
-                
-                <!-- Upload File -->
-                <div class="card">
-                    <div class="card-header">
-                        <h2 class="card-title">📤 Upload de Dados</h2>
-                    </div>
-                    <form id="upload-form" enctype="multipart/form-data">
-                        <div class="form-group">
-                            <label class="form-label">Selecionar Arquivo CSV</label>
-                            <input type="file" class="form-control" id="csv-file" accept=".csv" required>
-                            <small style="color: #666; margin-top: 0.5rem; display: block;">
-                                Apenas arquivos .csv são aceitos
-                            </small>
-                        </div>
-                        <button type="submit" class="btn btn-success">
-                            🚀 Enviar Dados
-                        </button>
-                    </form>
-                    <div id="upload-message"></div>
-                </div>
-            </div>
-            
-            <!-- Upload Results -->
-            <div id="upload-results" class="card" style="display: none; margin-top: 2rem;">
-                <div class="card-header">
-                    <h2 class="card-title">Resultado do Upload</h2>
-                </div>
-                <div id="upload-summary"></div>
-                <div id="upload-errors" style="margin-top: 1rem;"></div>
-            </div>
-        </div>
 
         <div id="settings-tab" class="tab-content">
             <div class="card">
@@ -475,11 +523,6 @@
                 await getAllocation();
             });
 
-            // Add upload form handler for Teste tab
-            document.getElementById('upload-form').addEventListener('submit', async function(e) {
-                e.preventDefault();
-                await uploadFile();
-            });
         }
         
         async function createExperiment() {
@@ -559,6 +602,9 @@
                 document.getElementById('csv-upload-message').innerHTML = '<div class="alert alert-warning">⚠️ Selecione um arquivo CSV</div>';
                 return;
             }
+
+            // Preview CSV content to show experiment IDs
+            document.getElementById('csv-upload-message').innerHTML = '<div class="alert alert-warning">📤 Processando arquivo...</div>';
             
             const formData = new FormData();
             formData.append('file', file);
@@ -573,7 +619,22 @@
                 const messageDiv = document.getElementById('csv-upload-message');
                 
                 if (response.ok) {
-                    messageDiv.innerHTML = '<div class="alert alert-success">✅ Arquivo enviado com sucesso! ' + result.processed_rows + ' registros processados.</div>';
+                    let successHtml = '<div class="alert alert-success">✅ Arquivo enviado com sucesso!<br>';
+                    successHtml += '📊 ' + result.processed_rows + ' registros processados de ' + result.total_rows + ' linhas<br>';
+                    
+                    if (result.experiment_ids && result.experiment_ids.length > 0) {
+                        successHtml += '🔢 Experimentos atualizados: ' + result.experiment_ids.join(', ');
+                    }
+                    
+                    if (result.errors && result.errors.length > 0) {
+                        successHtml += '<br>⚠️ ' + result.total_errors + ' erros encontrados';
+                        if (result.errors.length > 0) {
+                            successHtml += ':<br><small>' + result.errors.slice(0, 3).join('<br>') + '</small>';
+                        }
+                    }
+                    successHtml += '</div>';
+                    
+                    messageDiv.innerHTML = successHtml;
                     fileInput.value = '';
                     loadAllExperiments();
                 } else {
@@ -584,92 +645,6 @@
             }
         }
         
-        async function uploadFile() {
-            const fileInput = document.getElementById('csv-file');
-            const file = fileInput.files[0];
-            
-            if (!file) {
-                document.getElementById('upload-message').innerHTML = '<div class="alert alert-warning">⚠️ Por favor, selecione um arquivo CSV</div>';
-                return;
-            }
-            
-            if (!file.name.endsWith('.csv')) {
-                document.getElementById('upload-message').innerHTML = '<div class="alert alert-danger">❌ Apenas arquivos CSV são aceitos</div>';
-                return;
-            }
-            
-            const formData = new FormData();
-            formData.append('file', file);
-            
-            try {
-                document.getElementById('upload-message').innerHTML = '<div class="alert alert-warning">⏳ Processando arquivo...</div>';
-                
-                const response = await fetch(API_URL + '/upload-data', {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                const result = await response.json();
-                
-                if (response.ok) {
-                    // Show success message
-                    document.getElementById('upload-message').innerHTML = 
-                        '<div class="alert alert-success">✅ Upload concluído! ' + result.processed_rows + ' linhas processadas de ' + result.total_rows + ' total</div>';
-                    
-                    // Display detailed results
-                    displayUploadResults(result);
-                    
-                    // Update header stats
-                    loadAllExperiments();
-                    
-                    // Clear file input
-                    fileInput.value = '';
-                    
-                } else {
-                    document.getElementById('upload-message').innerHTML = 
-                        '<div class="alert alert-danger">❌ Erro no upload: ' + (result.detail || 'Erro desconhecido') + '</div>';
-                }
-                
-            } catch (error) {
-                console.error('Erro no upload:', error);
-                document.getElementById('upload-message').innerHTML = '<div class="alert alert-danger">❌ Erro de conexão durante upload</div>';
-            }
-        }
-        
-        function displayUploadResults(result) {
-            const resultsDiv = document.getElementById('upload-results');
-            const summaryDiv = document.getElementById('upload-summary');
-            const errorsDiv = document.getElementById('upload-errors');
-            
-            // Show results section
-            resultsDiv.style.display = 'block';
-            
-            // Summary
-            const successRate = result.total_rows > 0 ? 
-                ((result.processed_rows / result.total_rows) * 100).toFixed(1) : 0;
-            
-            summaryDiv.innerHTML = '<div class="alert alert-' + (result.status === 'success' ? 'success' : 'warning') + '">' +
-                '<h4>📊 Resumo do Upload</h4>' +
-                '<p><strong>Linhas processadas:</strong> ' + result.processed_rows + ' de ' + result.total_rows + ' (' + successRate + '%)</p>' +
-                '<p><strong>Status:</strong> ' + (result.status === 'success' ? '✅ Sucesso' : '⚠️ Parcial') + '</p>' +
-                (result.total_errors > 0 ? '<p><strong>Erros encontrados:</strong> ' + result.total_errors + '</p>' : '') +
-                '</div>';
-            
-            // Errors
-            if (result.errors && result.errors.length > 0) {
-                errorsDiv.innerHTML = '<div class="alert alert-danger">' +
-                    '<h4>❌ Erros Encontrados</h4>' +
-                    '<ul style="margin: 0.5rem 0; padding-left: 1.5rem;">' +
-                    result.errors.map(function(error) { return '<li>' + error + '</li>'; }).join('') +
-                    '</ul>' +
-                    (result.total_errors > result.errors.length ? 
-                        '<p><small>... e mais ' + (result.total_errors - result.errors.length) + ' erros</small></p>' : 
-                        '') +
-                    '</div>';
-            } else {
-                errorsDiv.innerHTML = '';
-            }
-        }
         
         async function getAllocation() {
             const expId = document.getElementById('allocation-exp-id').value;
@@ -759,12 +734,67 @@
                     const experiments = await response.json();
                     allExperiments = experiments;
                     updateHeaderStats(experiments);
+                    loadEventsList(experiments);
                 } else {
                     console.error('Failed to load experiments');
                 }
             } catch (error) {
                 console.error('Error loading experiments:', error);
             }
+        }
+
+        function loadEventsList(experiments) {
+            const eventsTableBody = document.getElementById('events-table-body');
+            let eventsHtml = '';
+            
+            if (!experiments || experiments.length === 0) {
+                eventsHtml = '<tr><td colspan="8">Nenhum evento encontrado</td></tr>';
+            } else {
+                let allEvents = [];
+                
+                experiments.forEach(function(exp) {
+                    if (exp.metrics && exp.metrics.length > 0) {
+                        exp.metrics.forEach(function(metric) {
+                            allEvents.push({
+                                date: metric.date,
+                                experimentName: exp.name,
+                                experimentId: exp.id,
+                                variantName: metric.variant_name,
+                                impressions: metric.impressions,
+                                clicks: metric.clicks,
+                                conversions: metric.conversions || 0,
+                                ctr: metric.impressions > 0 ? (metric.clicks / metric.impressions * 100).toFixed(2) : '0.00',
+                                conversionRate: metric.clicks > 0 ? (metric.conversions / metric.clicks * 100).toFixed(2) : '0.00'
+                            });
+                        });
+                    }
+                });
+                
+                // Sort by date descending
+                allEvents.sort((a, b) => new Date(b.date) - new Date(a.date));
+                
+                // Limit to last 50 events
+                allEvents = allEvents.slice(0, 50);
+                
+                if (allEvents.length === 0) {
+                    eventsHtml = '<tr><td colspan="8">Nenhum evento encontrado</td></tr>';
+                } else {
+                    allEvents.forEach(function(event) {
+                        eventsHtml += '<tr>' +
+                            '<td>' + event.date + '</td>' +
+                            '<td>' + event.experimentName + ' (#' + event.experimentId + ')</td>' +
+                            '<td>' + event.variantName + '</td>' +
+                            '<td>' + event.impressions.toLocaleString() + '</td>' +
+                            '<td>' + event.clicks.toLocaleString() + '</td>' +
+                            '<td>' + event.conversions.toLocaleString() + '</td>' +
+                            '<td>' + event.ctr + '%</td>' +
+                            '<td>' + event.conversionRate + '%</td>' +
+                            '</tr>';
+                    });
+                }
+            }
+            
+            eventsTableBody.innerHTML = eventsHtml;
         }
         
         function updateHeaderStats(experiments) {
@@ -930,6 +960,25 @@
                     }
                 }
             });
+
+            const conversionCtx = document.getElementById('conversion-chart').getContext('2d');
+            charts.conversionChart = new Chart(conversionCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: []
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: { display: true, text: 'Taxa de Conversão por Variante' }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, title: { display: true, text: 'Conversão (%)' } }
+                    }
+                }
+            });
             
             const allocCtx = document.getElementById('allocation-chart').getContext('2d');
             charts.allocationChart = new Chart(allocCtx, {
@@ -950,6 +999,25 @@
                     },
                     scales: {
                         y: { beginAtZero: true, max: 100, title: { display: true, text: 'Alocação (%)' } }
+                    }
+                }
+            });
+
+            const performanceCtx = document.getElementById('performance-chart').getContext('2d');
+            charts.performanceChart = new Chart(performanceCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['CTR', 'Taxa de Conversão', 'Volume', 'Eficiência'],
+                    datasets: []
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: { display: true, text: 'Comparativo de Performance por Variante' }
+                    },
+                    scales: {
+                        r: { beginAtZero: true, max: 100 }
                     }
                 }
             });
@@ -987,6 +1055,238 @@
                 } catch (error) {
                     alert('❌ Erro de conexão: ' + error.message);
                 }
+            }
+        }
+
+        // Simulation Functions
+        function addSimVariant() {
+            const variantsList = document.getElementById('sim-variants-list');
+            const colors = ['#f0ad4e', '#d9534f', '#17a2b8', '#28a745', '#6f42c1', '#fd7e14'];
+            const randomColor = colors[Math.floor(Math.random() * colors.length)];
+            
+            const variantDiv = document.createElement('div');
+            variantDiv.className = 'variant-row';
+            variantDiv.innerHTML = 
+                '<input type="text" class="form-control" placeholder="Nome" value="variant_' + (variantsList.children.length + 1) + '" required>' +
+                '<input type="number" class="form-control" placeholder="CTR Real (%)" value="2.8" step="0.1" min="0" max="100" required>' +
+                '<input type="number" class="form-control" placeholder="Conv Rate (%)" value="16" step="0.1" min="0" max="100" required>' +
+                '<input type="text" class="form-control" placeholder="Cor" value="' + randomColor + '" required>' +
+                '<button type="button" class="btn btn-danger btn-sm" onclick="removeSimVariant(this)">✕</button>';
+            variantsList.appendChild(variantDiv);
+        }
+
+        function removeSimVariant(button) {
+            button.parentElement.remove();
+        }
+
+        function runSimulation() {
+            const runs = parseInt(document.getElementById('sim-runs').value);
+            const days = parseInt(document.getElementById('sim-days').value);
+            const traffic = parseInt(document.getElementById('sim-traffic').value);
+            
+            const variants = [];
+            document.querySelectorAll('#sim-variants-list .variant-row').forEach(function(row) {
+                const inputs = row.querySelectorAll('input');
+                variants.push({
+                    name: inputs[0].value,
+                    trueCTR: parseFloat(inputs[1].value) / 100,
+                    trueConvRate: parseFloat(inputs[2].value) / 100,
+                    color: inputs[3].value
+                });
+            });
+
+            if (variants.length < 2) {
+                document.getElementById('simulation-message').innerHTML = '<div class="alert alert-warning">⚠️ Adicione pelo menos 2 variantes para simular</div>';
+                return;
+            }
+
+            document.getElementById('simulation-message').innerHTML = '<div class="alert alert-warning">🔄 Executando simulação...</div>';
+            
+            // Run Thompson Sampling simulation
+            const results = simulateThompsonSampling(variants, days, traffic, runs);
+            displaySimulationResults(results, variants);
+        }
+
+        function simulateThompsonSampling(variants, days, dailyTraffic, runs) {
+            let totalRegret = 0;
+            let bestVariantWins = {};
+            let allocationHistory = [];
+            
+            variants.forEach(v => bestVariantWins[v.name] = 0);
+            
+            // Find true best variant
+            const trueBest = variants.reduce((a, b) => 
+                (a.trueCTR * a.trueConvRate) > (b.trueCTR * b.trueConvRate) ? a : b
+            );
+            
+            for (let run = 0; run < runs; run++) {
+                // Initialize each variant's stats
+                let variantStats = {};
+                variants.forEach(v => {
+                    variantStats[v.name] = { impressions: 1, clicks: 1, conversions: 1 };
+                });
+                
+                let runRegret = 0;
+                
+                for (let day = 0; day < days; day++) {
+                    // Calculate Thompson Sampling allocations
+                    let samples = {};
+                    variants.forEach(v => {
+                        const alpha = variantStats[v.name].clicks + 1;
+                        const beta = variantStats[v.name].impressions - variantStats[v.name].clicks + 1;
+                        samples[v.name] = betaRandom(alpha, beta);
+                    });
+                    
+                    // Allocate traffic based on samples
+                    let totalSample = Object.values(samples).reduce((a, b) => a + b, 0);
+                    let allocations = {};
+                    variants.forEach(v => {
+                        allocations[v.name] = samples[v.name] / totalSample;
+                    });
+                    
+                    // Simulate day's traffic
+                    variants.forEach(v => {
+                        const allocated = Math.round(dailyTraffic * allocations[v.name]);
+                        const clicks = binomialRandom(allocated, v.trueCTR);
+                        const conversions = binomialRandom(clicks, v.trueConvRate);
+                        
+                        variantStats[v.name].impressions += allocated;
+                        variantStats[v.name].clicks += clicks;
+                        variantStats[v.name].conversions += conversions;
+                        
+                        // Calculate regret (lost value compared to best)
+                        const lostValue = allocated * (trueBest.trueCTR * trueBest.trueConvRate - v.trueCTR * v.trueConvRate);
+                        runRegret += Math.max(0, lostValue);
+                    });
+                    
+                    if (run === 0) { // Store allocation history for first run
+                        allocationHistory.push({
+                            day: day + 1,
+                            allocations: { ...allocations }
+                        });
+                    }
+                }
+                
+                // Determine winner of this run
+                let bestVariant = variants[0];
+                let bestScore = 0;
+                variants.forEach(v => {
+                    const stats = variantStats[v.name];
+                    const ctr = stats.clicks / stats.impressions;
+                    const convRate = stats.conversions / stats.clicks;
+                    const score = ctr * convRate;
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestVariant = v;
+                    }
+                });
+                
+                bestVariantWins[bestVariant.name]++;
+                totalRegret += runRegret;
+            }
+            
+            return {
+                totalRegret: totalRegret / runs,
+                bestVariantWins,
+                allocationHistory,
+                trueBest: trueBest.name,
+                runs
+            };
+        }
+
+        function betaRandom(alpha, beta) {
+            // Simple beta distribution approximation
+            const x = Math.random();
+            const y = Math.random();
+            return Math.pow(x, 1/alpha) / (Math.pow(x, 1/alpha) + Math.pow(y, 1/beta));
+        }
+
+        function binomialRandom(n, p) {
+            let successes = 0;
+            for (let i = 0; i < n; i++) {
+                if (Math.random() < p) successes++;
+            }
+            return successes;
+        }
+
+        function displaySimulationResults(results, variants) {
+            const metricsGrid = document.getElementById('sim-metrics-grid');
+            const chartContainer = document.getElementById('sim-chart-container');
+            
+            // Show metrics
+            document.getElementById('sim-best-variant').textContent = results.trueBest;
+            document.getElementById('sim-confidence').textContent = 
+                ((results.bestVariantWins[results.trueBest] / results.runs) * 100).toFixed(1) + '%';
+            document.getElementById('sim-regret').textContent = results.totalRegret.toFixed(0);
+            document.getElementById('sim-efficiency').textContent = 
+                (100 - (results.totalRegret / (results.runs * 30)) * 100).toFixed(1) + '%';
+            
+            metricsGrid.style.display = 'grid';
+            chartContainer.style.display = 'block';
+            
+            // Update simulation chart
+            updateSimulationChart(results.allocationHistory, variants);
+            
+            document.getElementById('simulation-message').innerHTML = 
+                '<div class="alert alert-success">✅ Simulação concluída com sucesso!</div>';
+        }
+
+        function updateSimulationChart(allocationHistory, variants) {
+            const chart = charts.simulationChart;
+            if (!chart) {
+                initializeSimulationChart();
+                return updateSimulationChart(allocationHistory, variants);
+            }
+            
+            const labels = allocationHistory.map(h => 'Dia ' + h.day);
+            const datasets = variants.map(variant => ({
+                label: variant.name,
+                data: allocationHistory.map(h => (h.allocations[variant.name] * 100).toFixed(1)),
+                borderColor: variant.color,
+                backgroundColor: variant.color + '20',
+                fill: false,
+                tension: 0.1
+            }));
+            
+            chart.data.labels = labels;
+            chart.data.datasets = datasets;
+            chart.update();
+        }
+
+        function initializeSimulationChart() {
+            const simCtx = document.getElementById('simulation-chart').getContext('2d');
+            charts.simulationChart = new Chart(simCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: []
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: { display: true, text: 'Evolução da Alocação na Simulação' }
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            max: 100,
+                            title: { display: true, text: 'Alocação (%)' } 
+                        }
+                    }
+                }
+            });
+        }
+
+        function resetSimulation() {
+            document.getElementById('sim-metrics-grid').style.display = 'none';
+            document.getElementById('sim-chart-container').style.display = 'none';
+            document.getElementById('simulation-message').innerHTML = '';
+            
+            if (charts.simulationChart) {
+                charts.simulationChart.data.labels = [];
+                charts.simulationChart.data.datasets = [];
+                charts.simulationChart.update();
             }
         }
     </script>

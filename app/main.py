@@ -309,7 +309,8 @@ async def get_allocation(
     metrics = db.query(
         DailyMetric.variant_name,
         func.sum(DailyMetric.impressions).label('impressions'),
-        func.sum(DailyMetric.clicks).label('clicks')
+        func.sum(DailyMetric.clicks).label('clicks'),
+        func.sum(DailyMetric.conversions).label('conversions')
     ).filter(
         DailyMetric.experiment_id == experiment_id,
         DailyMetric.date >= start_date,
@@ -348,7 +349,8 @@ async def get_allocation(
         variant_data.append({
             "name": m.variant_name,
             "impressions": m.impressions or 0,
-            "clicks": m.clicks or 0
+            "clicks": m.clicks or 0,
+            "conversions": m.conversions or 0
         })
 
     # 5. Calcula alocação
@@ -521,6 +523,7 @@ async def upload_data(
         
         processed_rows = 0
         errors = []
+        experiment_ids_used = set()
         
         for row_num, row in enumerate(csv_reader, start=2):  # Start at 2 because row 1 is headers
             try:
@@ -578,6 +581,8 @@ async def upload_data(
                     )
                     db.add(metric)
                 
+                # Track experiment ID used
+                experiment_ids_used.add(experiment_id)
                 processed_rows += 1
                 
             except ValueError as e:
@@ -594,7 +599,8 @@ async def upload_data(
             "processed_rows": processed_rows,
             "total_rows": csv_reader.line_num - 1,  # Subtract header row
             "errors": errors[:10],  # Limit errors to first 10
-            "total_errors": len(errors)
+            "total_errors": len(errors),
+            "experiment_ids": sorted(list(experiment_ids_used))
         }
         
     except Exception as e:
