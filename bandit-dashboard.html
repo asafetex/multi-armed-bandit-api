@@ -216,8 +216,15 @@
         
         .form-row {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 1rem;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 0.75rem;
+        }
+        
+        .variant-row {
+            display: grid;
+            grid-template-columns: 2fr 1.5fr 1.5fr 1.5fr 0.8fr;
+            gap: 0.5rem;
+            align-items: end;
         }
         
         /* Buttons */
@@ -516,11 +523,10 @@
         
         <!-- Tabs -->
         <div class="tabs">
-            <button class="tab active" onclick="switchTab(event, 'experiments')">Experimentos</button>
-            <button class="tab" onclick="switchTab(event, 'upload')">📤 Upload de Dados</button>
-            <button class="tab" onclick="switchTab(event, 'analysis')">Análise</button>
-            <button class="tab" onclick="switchTab(event, 'simulation')">Simulação</button>
-            <button class="tab" onclick="switchTab(event, 'settings')">Configurações</button>
+            <button class="tab active" onclick="switchTab(event, 'experiments')" data-pt="Experimentos" data-en="Experiments">Experimentos</button>
+            <button class="tab" onclick="switchTab(event, 'analysis')" data-pt="Análise" data-en="Analysis">Análise</button>
+            <button class="tab" onclick="switchTab(event, 'simulation')" data-pt="Simulação" data-en="Simulation">Simulação</button>
+            <button class="tab" onclick="switchTab(event, 'settings')" data-pt="Configurações" data-en="Settings">Configurações</button>
         </div>
         
         <!-- Tab Contents -->
@@ -574,6 +580,30 @@
                             <button type="submit" class="btn btn-success">Enviar Dados</button>
                             <button type="button" class="btn btn-primary" onclick="loadSampleData()">Carregar Exemplo</button>
                             <button type="button" class="btn btn-warning" onclick="downloadTemplate()">📊 Modelo de Dados</button>
+                        </div>
+                        
+                        <!-- Upload Section -->
+                        <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 2px solid var(--light);">
+                            <h4 style="margin-bottom: 1rem;">📤 Upload de Dados em Lote</h4>
+                            <form id="upload-form" enctype="multipart/form-data">
+                                <div class="form-group">
+                                    <label class="form-label">Selecionar Arquivo CSV</label>
+                                    <input type="file" class="form-control" id="csv-file" accept=".csv" required>
+                                    <small style="color: #666; margin-top: 0.5rem; display: block;">
+                                        Apenas arquivos .csv são aceitos. Estrutura: experiment_id, date, variant_name, impressions, clicks, conversions
+                                    </small>
+                                </div>
+                                <button type="submit" class="btn btn-success">
+                                    🚀 Enviar Dados
+                                </button>
+                            </form>
+                            <div id="upload-message"></div>
+                            
+                            <!-- Upload Results -->
+                            <div id="upload-results" style="display: none; margin-top: 1rem;">
+                                <div id="upload-summary"></div>
+                                <div id="upload-errors" style="margin-top: 1rem;"></div>
+                            </div>
                         </div>
                         <div id="events-message"></div>
                     </form>
@@ -1019,37 +1049,22 @@
         function addVariant(name = '', impressions = '', clicks = '', conversions = '') {
             const container = document.getElementById('variants-list');
             const variantDiv = document.createElement('div');
-            variantDiv.className = 'form-row';
+            variantDiv.className = 'variant-row';
             variantDiv.style.marginBottom = '0.5rem';
             variantDiv.innerHTML = `
-                <div class="form-group">
-                    <input type="text" class="form-control" placeholder="Nome" value="${name}" required>
-                </div>
-                <div class="form-group">
-                    <input type="number" class="form-control" placeholder="Impressões" value="${impressions}" min="0" required>
-                </div>
-                <div class="form-group">
-                    <input type="number" class="form-control" placeholder="Cliques" value="${clicks}" min="0" required>
-                </div>
-                <div class="form-group">
-                    <input type="number" class="form-control" placeholder="Conversões" value="${conversions}" min="0" required>
-                </div>
-                <div class="form-group">
-                    <button type="button" class="btn btn-danger btn-sm" onclick="this.closest('.form-row').remove()">Remover</button>
-                </div>
+                <input type="text" class="form-control" placeholder="Nome da Variante" value="${name}" required>
+                <input type="number" class="form-control" placeholder="Impressões" value="${impressions}" min="0" required>
+                <input type="number" class="form-control" placeholder="Cliques" value="${clicks}" min="0" required>
+                <input type="number" class="form-control" placeholder="Conversões" value="${conversions}" min="0" required>
+                <button type="button" class="btn btn-danger btn-sm" onclick="this.closest('.variant-row').remove()">×</button>
             `;
             container.appendChild(variantDiv);
         }
         
-        // Load Sample Data - Now opens file upload
+        // Load Sample Data - Now opens file upload directly
         function loadSampleData() {
-            // Switch to upload tab
-            switchTab({target: document.querySelector('[onclick*="upload"]')}, 'upload');
-            
-            // Focus on file input
-            setTimeout(() => {
-                document.getElementById('csv-file').click();
-            }, 100);
+            // Directly trigger file input click
+            document.getElementById('csv-file').click();
         }
         
         // Language Management
@@ -1134,12 +1149,13 @@
             const date = document.getElementById('event-date').value;
             
             const variants = [];
-            document.querySelectorAll('#variants-list .form-row').forEach(row => {
+            document.querySelectorAll('#variants-list .variant-row').forEach(row => {
                 const inputs = row.querySelectorAll('input');
                 variants.push({
                     variant_name: inputs[0].value,
                     impressions: parseInt(inputs[1].value),
-                    clicks: parseInt(inputs[2].value)
+                    clicks: parseInt(inputs[2].value),
+                    conversions: parseInt(inputs[3].value)
                 });
             });
             
