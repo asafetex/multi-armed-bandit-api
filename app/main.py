@@ -107,18 +107,55 @@ async def health_check(db: Session = Depends(get_db)):
     """Comprehensive health check for Render"""
     try:
         # Test database connection
-        db.execute(text("SELECT 1"))
-        db_status = "healthy"
+        result = db.execute(text("SELECT 1 as test"))
+        test_value = result.fetchone()[0]
+        db_status = "healthy" if test_value == 1 else "unhealthy"
     except Exception as e:
         logger.error(f"Database health check failed: {e}")
-        db_status = "unhealthy"
+        db_status = f"unhealthy: {str(e)}"
     
     return {
-        "status": "healthy" if db_status == "healthy" else "unhealthy",
+        "status": "healthy" if "healthy" in db_status else "unhealthy",
         "database": db_status,
         "version": "1.0.0",
-        "environment": settings.ENVIRONMENT
+        "environment": settings.ENVIRONMENT,
+        "database_url_configured": "DATABASE_URL" in os.environ
     }
+
+@app.get("/db-test")
+async def database_test():
+    """Test database connection with detailed information"""
+    try:
+        from app.core.database import engine
+        
+        # Test raw connection
+        with engine.connect() as conn:
+            result = conn.execute(text("SELECT version()"))
+            db_version = result.fetchone()[0]
+            
+            # Test table existence
+            tables_result = conn.execute(text("""
+                SELECT table_name 
+                FROM information_schema.tables 
+                WHERE table_schema = 'public'
+            """))
+            tables = [row[0] for row in tables_result.fetchall()]
+            
+        return {
+            "status": "success",
+            "database_version": db_version,
+            "tables": tables,
+            "database_url_configured": "DATABASE_URL" in os.environ,
+            "engine_url": str(engine.url).replace(str(engine.url).split('@')[0].split('://')[-1], '***') if '@' in str(engine.url) else str(engine.url)
+        }
+        
+    except Exception as e:
+        logger.error(f"Database test failed: {e}")
+        return {
+            "status": "error",
+            "error": str(e),
+            "database_url_configured": "DATABASE_URL" in os.environ
+        }
 
 @app.get("/dashboard", response_class=HTMLResponse)
 async def get_dashboard():
