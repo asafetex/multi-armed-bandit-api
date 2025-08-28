@@ -377,14 +377,30 @@
                                     <input type="text" class="form-control" placeholder="Nome" value="control" required>
                                     <input type="number" class="form-control" placeholder="CTR Real (%)" value="2.5" step="0.1" min="0" max="100" required>
                                     <input type="number" class="form-control" placeholder="Conv Rate (%)" value="15" step="0.1" min="0" max="100" required>
-                                    <input type="text" class="form-control" placeholder="Cor" value="#4a90e2" required>
+                                    <select class="form-control" required>
+                                        <option value="#4a90e2" selected>🔵 Azul</option>
+                                        <option value="#5cb85c">🟢 Verde</option>
+                                        <option value="#f0ad4e">🟡 Amarelo</option>
+                                        <option value="#d9534f">🔴 Vermelho</option>
+                                        <option value="#17a2b8">🔷 Azul Claro</option>
+                                        <option value="#6f42c1">🟣 Roxo</option>
+                                        <option value="#fd7e14">🟠 Laranja</option>
+                                    </select>
                                     <button type="button" class="btn btn-danger btn-sm" onclick="removeSimVariant(this)">✕</button>
                                 </div>
                                 <div class="variant-row">
                                     <input type="text" class="form-control" placeholder="Nome" value="variant_a" required>
                                     <input type="number" class="form-control" placeholder="CTR Real (%)" value="3.2" step="0.1" min="0" max="100" required>
                                     <input type="number" class="form-control" placeholder="Conv Rate (%)" value="18" step="0.1" min="0" max="100" required>
-                                    <input type="text" class="form-control" placeholder="Cor" value="#5cb85c" required>
+                                    <select class="form-control" required>
+                                        <option value="#4a90e2">🔵 Azul</option>
+                                        <option value="#5cb85c" selected>🟢 Verde</option>
+                                        <option value="#f0ad4e">🟡 Amarelo</option>
+                                        <option value="#d9534f">🔴 Vermelho</option>
+                                        <option value="#17a2b8">🔷 Azul Claro</option>
+                                        <option value="#6f42c1">🟣 Roxo</option>
+                                        <option value="#fd7e14">🟠 Laranja</option>
+                                    </select>
                                     <button type="button" class="btn btn-danger btn-sm" onclick="removeSimVariant(this)">✕</button>
                                 </div>
                             </div>
@@ -468,24 +484,90 @@
         let currentLanguage = 'pt';
         let translations = {
             pt: {
-                experiments: 'Experimentos',
-                totalImpressions: 'Impressões Totais',
-                avgCTR: 'CTR Médio',
-                avgConversion: 'Taxa de Conversão',
-                bestVariant: 'Melhor Variante',
-                confidence: 'Confiança',
-                cumulativeRegret: 'Regret Acumulado',
-                convergenceRate: 'Taxa Convergência'
+                // Header & Tabs
+                experiments: 'Experimentos', totalImpressions: 'Impressões Totais', avgCTR: 'CTR Médio', avgConversion: 'Taxa de Conversão',
+                bestVariant: 'Melhor Variante', confidence: 'Confiança', cumulativeRegret: 'Regret Acumulado', convergenceRate: 'Taxa Convergência',
+                analysis: 'Análise', simulation: 'Simulação', settings: 'Configurações', darkMode: 'Dark Mode', lightMode: 'Light Mode',
+                
+                // Forms & Buttons
+                createExperiment: 'Criar Experimento', experimentName: 'Nome do Experimento', description: 'Descrição',
+                sendManualData: 'Enviar Dados Manualmente', experimentId: 'ID do Experimento', date: 'Data', variants: 'Variantes',
+                addVariant: '+ Adicionar Variante', sendManualDataBtn: 'Enviar Dados Manuais', loadExample: 'Carregar Exemplo',
+                dataModel: '📥 Modelo de Dados', csvUpload: '📤 Upload de Dados CSV', selectCsvFile: 'Selecionar Arquivo CSV',
+                sendCsvData: '🚀 Enviar Dados CSV', calculateOptimalAllocation: 'Calcular Alocação Ótima', windowDays: 'Janela (dias)',
+                calculateAllocation: 'Calcular Alocação', ctrBasedAllocation: '📈 Alocação Baseada em CTR',
+                conversionBasedAllocation: '🎯 Alocação Baseada em CTR + Conversão', clearAllData: '🗑️ Limpar Todos os Dados',
+                
+                // Analysis
+                ctrPerformance: 'Performance CTR', conversionRate: 'Taxa de Conversão', allocationEvolution: 'Evolução da Alocação',
+                performanceComparison: 'Comparativo de Performance', recentEvents: 'Lista de Eventos Recentes', variant: 'Variante',
+                impressions: 'Impressões', clicks: 'Cliques', conversions: 'Conversões', convRate: 'Taxa Conv.',
+                loadingData: 'Carregando dados...', noEvents: 'Nenhum evento encontrado',
+                
+                // Simulation
+                configureSimulation: 'Configurar Simulação', simulationRuns: 'Número de Simulações', daysToSimulate: 'Dias para Simular',
+                dailyTraffic: 'Tráfego Diário', simulationVariants: 'Variantes para Simular', name: 'Nome', realCTR: 'CTR Real (%)',
+                realConvRate: 'Conv Rate (%)', color: 'Cor', runSimulation: '🎲 Executar Simulação', clear: '🔄 Limpar',
+                simulationResults: 'Resultados da Simulação', totalRegret: 'Regret Total', efficiency: 'Eficiência',
+                
+                // Settings
+                algorithmSettings: 'Configurações do Algoritmo', alphaPrior: 'Alpha Prior', betaPrior: 'Beta Prior',
+                minExploreRate: 'Taxa de Exploração Mínima (%)', controlFloor: 'Piso do Control (%)', saveSettings: 'Salvar Configurações',
+                
+                // Messages
+                experimentCreated: '✅ Experimento criado com ID:', dataSubmitted: '✅ Dados enviados com sucesso!',
+                fileUploaded: '✅ Arquivo enviado com sucesso!', recordsProcessed: 'registros processados de',
+                experimentsUpdated: '🔢 Experimentos atualizados:', errorsFound: 'erros encontrados',
+                processingFile: '📤 Processando arquivo...', selectCsvWarning: '⚠️ Selecione um arquivo CSV',
+                addTwoVariants: '⚠️ Adicione pelo menos 2 variantes para simular', simulationCompleted: '✅ Simulação concluída com sucesso!',
+                simulationRunning: '🔄 Executando simulação...', settingsSaved: '✅ Configurações salvas!',
+                confirmDelete: '⚠️ Esta ação irá deletar todos os dados. Tem certeza?', allDataDeleted: '✅ Todos os dados foram deletados!',
+                deleteError: '❌ Erro ao deletar dados', connectionError: '❌ Erro de conexão:', error: '❌ Erro:',
+                csvOnly: 'Apenas arquivos .csv são aceitos', csvStructure: 'Estrutura: experiment_id, date, variant_name, impressions, clicks, conversions',
+                addOneVariant: '⚠️ Adicione pelo menos uma variante'
             },
             en: {
-                experiments: 'Experiments',
-                totalImpressions: 'Total Impressions',
-                avgCTR: 'Average CTR',
-                avgConversion: 'Conversion Rate',
-                bestVariant: 'Best Variant',
-                confidence: 'Confidence',
-                cumulativeRegret: 'Cumulative Regret',
-                convergenceRate: 'Convergence Rate'
+                // Header & Tabs
+                experiments: 'Experiments', totalImpressions: 'Total Impressions', avgCTR: 'Average CTR', avgConversion: 'Conversion Rate',
+                bestVariant: 'Best Variant', confidence: 'Confidence', cumulativeRegret: 'Cumulative Regret', convergenceRate: 'Convergence Rate',
+                analysis: 'Analysis', simulation: 'Simulation', settings: 'Settings', darkMode: 'Dark Mode', lightMode: 'Light Mode',
+                
+                // Forms & Buttons
+                createExperiment: 'Create Experiment', experimentName: 'Experiment Name', description: 'Description',
+                sendManualData: 'Send Manual Data', experimentId: 'Experiment ID', date: 'Date', variants: 'Variants',
+                addVariant: '+ Add Variant', sendManualDataBtn: 'Send Manual Data', loadExample: 'Load Example',
+                dataModel: '📥 Data Template', csvUpload: '📤 CSV Data Upload', selectCsvFile: 'Select CSV File',
+                sendCsvData: '🚀 Send CSV Data', calculateOptimalAllocation: 'Calculate Optimal Allocation', windowDays: 'Window (days)',
+                calculateAllocation: 'Calculate Allocation', ctrBasedAllocation: '📈 CTR-Based Allocation',
+                conversionBasedAllocation: '🎯 CTR + Conversion Based Allocation', clearAllData: '🗑️ Clear All Data',
+                
+                // Analysis
+                ctrPerformance: 'CTR Performance', conversionRate: 'Conversion Rate', allocationEvolution: 'Allocation Evolution',
+                performanceComparison: 'Performance Comparison', recentEvents: 'Recent Events List', variant: 'Variant',
+                impressions: 'Impressions', clicks: 'Clicks', conversions: 'Conversions', convRate: 'Conv Rate',
+                loadingData: 'Loading data...', noEvents: 'No events found',
+                
+                // Simulation
+                configureSimulation: 'Configure Simulation', simulationRuns: 'Number of Simulations', daysToSimulate: 'Days to Simulate',
+                dailyTraffic: 'Daily Traffic', simulationVariants: 'Variants to Simulate', name: 'Name', realCTR: 'Real CTR (%)',
+                realConvRate: 'Conv Rate (%)', color: 'Color', runSimulation: '🎲 Run Simulation', clear: '🔄 Clear',
+                simulationResults: 'Simulation Results', totalRegret: 'Total Regret', efficiency: 'Efficiency',
+                
+                // Settings
+                algorithmSettings: 'Algorithm Settings', alphaPrior: 'Alpha Prior', betaPrior: 'Beta Prior',
+                minExploreRate: 'Minimum Exploration Rate (%)', controlFloor: 'Control Floor (%)', saveSettings: 'Save Settings',
+                
+                // Messages
+                experimentCreated: '✅ Experiment created with ID:', dataSubmitted: '✅ Data submitted successfully!',
+                fileUploaded: '✅ File uploaded successfully!', recordsProcessed: 'records processed out of',
+                experimentsUpdated: '🔢 Updated experiments:', errorsFound: 'errors found',
+                processingFile: '📤 Processing file...', selectCsvWarning: '⚠️ Select a CSV file',
+                addTwoVariants: '⚠️ Add at least 2 variants to simulate', simulationCompleted: '✅ Simulation completed successfully!',
+                simulationRunning: '🔄 Running simulation...', settingsSaved: '✅ Settings saved!',
+                confirmDelete: '⚠️ This action will delete all data. Are you sure?', allDataDeleted: '✅ All data has been deleted!',
+                deleteError: '❌ Error deleting data', connectionError: '❌ Connection error:', error: '❌ Error:',
+                csvOnly: 'Only .csv files are accepted', csvStructure: 'Structure: experiment_id, date, variant_name, impressions, clicks, conversions',
+                addOneVariant: '⚠️ Add at least one variant'
             }
         };
         
@@ -925,20 +1007,150 @@
         }
         
         function updateLanguage() {
+            const t = translations[currentLanguage];
+            
+            // Language toggle button
             const langText = document.getElementById('lang-text');
             langText.textContent = currentLanguage === 'pt' ? 'English' : 'Português';
             
-            const labels = document.querySelectorAll('.stat-label');
-            labels[0].textContent = translations[currentLanguage].experiments;
-            labels[1].textContent = translations[currentLanguage].totalImpressions;
-            labels[2].textContent = translations[currentLanguage].avgCTR;
-            labels[3].textContent = translations[currentLanguage].avgConversion;
+            // Theme toggle button
+            const themeText = document.getElementById('theme-text');
+            themeText.textContent = t.darkMode;
             
+            // Header stats labels
+            const statLabels = document.querySelectorAll('.stat-label');
+            if (statLabels[0]) statLabels[0].textContent = t.experiments;
+            if (statLabels[1]) statLabels[1].textContent = t.totalImpressions;
+            if (statLabels[2]) statLabels[2].textContent = t.avgCTR;
+            if (statLabels[3]) statLabels[3].textContent = t.avgConversion;
+            
+            // Metric cards labels
             const metricLabels = document.querySelectorAll('.metric-label');
-            metricLabels[0].textContent = translations[currentLanguage].bestVariant;
-            metricLabels[1].textContent = translations[currentLanguage].confidence;
-            metricLabels[2].textContent = translations[currentLanguage].cumulativeRegret;
-            metricLabels[3].textContent = translations[currentLanguage].convergenceRate;
+            if (metricLabels[0]) metricLabels[0].textContent = t.bestVariant;
+            if (metricLabels[1]) metricLabels[1].textContent = t.confidence;
+            if (metricLabels[2]) metricLabels[2].textContent = t.cumulativeRegret;
+            if (metricLabels[3]) metricLabels[3].textContent = t.convergenceRate;
+            
+            // Tab buttons
+            const tabs = document.querySelectorAll('.tab');
+            if (tabs[0]) tabs[0].textContent = t.experiments;
+            if (tabs[1]) tabs[1].textContent = t.analysis;
+            if (tabs[2]) tabs[2].textContent = t.simulation;
+            if (tabs[3]) tabs[3].textContent = t.settings;
+            
+            // Card titles and form labels - Experiments tab
+            const cardTitles = document.querySelectorAll('.card-title');
+            if (cardTitles[0]) cardTitles[0].textContent = t.createExperiment;
+            if (cardTitles[1]) cardTitles[1].textContent = t.sendManualData;
+            if (cardTitles[2]) cardTitles[2].textContent = t.csvUpload;
+            if (cardTitles[3]) cardTitles[3].textContent = t.calculateOptimalAllocation;
+            
+            // Form labels and buttons
+            const formLabels = document.querySelectorAll('.form-label');
+            const labelTexts = [
+                t.experimentName, t.description, t.experimentId, t.date, t.variants,
+                t.selectCsvFile, t.experimentId, t.windowDays
+            ];
+            formLabels.forEach((label, index) => {
+                if (labelTexts[index]) label.textContent = labelTexts[index];
+            });
+            
+            // Buttons
+            const buttons = document.querySelectorAll('.btn');
+            buttons.forEach(btn => {
+                const text = btn.textContent.trim();
+                if (text.includes('Criar Experimento') || text.includes('Create Experiment')) {
+                    btn.textContent = t.createExperiment;
+                } else if (text.includes('Enviar Dados Manuais') || text.includes('Send Manual Data')) {
+                    btn.textContent = t.sendManualDataBtn;
+                } else if (text.includes('Carregar Exemplo') || text.includes('Load Example')) {
+                    btn.textContent = t.loadExample;
+                } else if (text.includes('Modelo de Dados') || text.includes('Data Template')) {
+                    btn.textContent = t.dataModel;
+                } else if (text.includes('Enviar Dados CSV') || text.includes('Send CSV Data')) {
+                    btn.textContent = t.sendCsvData;
+                } else if (text.includes('Calcular Alocação') || text.includes('Calculate Allocation')) {
+                    btn.textContent = t.calculateAllocation;
+                } else if (text.includes('Executar Simulação') || text.includes('Run Simulation')) {
+                    btn.textContent = t.runSimulation;
+                } else if (text.includes('Limpar') || text.includes('Clear')) {
+                    btn.textContent = t.clear;
+                } else if (text.includes('Salvar Configurações') || text.includes('Save Settings')) {
+                    btn.textContent = t.saveSettings;
+                } else if (text.includes('Limpar Todos os Dados') || text.includes('Clear All Data')) {
+                    btn.textContent = t.clearAllData;
+                } else if (text.includes('Adicionar Variante') || text.includes('Add Variant')) {
+                    btn.textContent = t.addVariant;
+                }
+            });
+            
+            // Table headers
+            const tableHeaders = document.querySelectorAll('th');
+            if (tableHeaders.length >= 8) {
+                tableHeaders[0].textContent = t.date;
+                tableHeaders[1].textContent = t.experiments;
+                tableHeaders[2].textContent = t.variant;
+                tableHeaders[3].textContent = t.impressions;
+                tableHeaders[4].textContent = t.clicks;
+                tableHeaders[5].textContent = t.conversions;
+                tableHeaders[6].textContent = 'CTR';
+                tableHeaders[7].textContent = t.convRate;
+            }
+            
+            // Analysis card titles
+            if (cardTitles[4]) cardTitles[4].textContent = t.ctrPerformance;
+            if (cardTitles[5]) cardTitles[5].textContent = t.conversionRate;
+            if (cardTitles[6]) cardTitles[6].textContent = t.allocationEvolution;
+            if (cardTitles[7]) cardTitles[7].textContent = t.performanceComparison;
+            if (cardTitles[8]) cardTitles[8].textContent = t.recentEvents;
+            
+            // Simulation card titles
+            if (cardTitles[9]) cardTitles[9].textContent = t.configureSimulation;
+            if (cardTitles[10]) cardTitles[10].textContent = t.simulationResults;
+            
+            // Settings card title
+            if (cardTitles[11]) cardTitles[11].textContent = t.algorithmSettings;
+            
+            // Placeholders
+            const inputs = document.querySelectorAll('input[placeholder], select[placeholder]');
+            inputs.forEach(input => {
+                const placeholder = input.getAttribute('placeholder');
+                if (placeholder && placeholder.includes('Nome')) {
+                    input.setAttribute('placeholder', t.name);
+                } else if (placeholder && placeholder.includes('CTR Real')) {
+                    input.setAttribute('placeholder', t.realCTR);
+                } else if (placeholder && placeholder.includes('Conv Rate')) {
+                    input.setAttribute('placeholder', t.realConvRate);
+                }
+            });
+            
+            // Update small help text
+            const smallTexts = document.querySelectorAll('small');
+            smallTexts.forEach(small => {
+                if (small.textContent.includes('Apenas arquivos .csv') || small.textContent.includes('Only .csv files')) {
+                    small.innerHTML = t.csvOnly + '. ' + t.csvStructure;
+                }
+            });
+            
+            // Update loading and no data messages
+            const loadingCells = document.querySelectorAll('td[colspan="8"]');
+            loadingCells.forEach(cell => {
+                if (cell.textContent.includes('Carregando') || cell.textContent.includes('Loading')) {
+                    cell.textContent = t.loadingData;
+                } else if (cell.textContent.includes('Nenhum evento') || cell.textContent.includes('No events')) {
+                    cell.textContent = t.noEvents;
+                }
+            });
+            
+            // Update allocation titles
+            const allocationTitles = document.querySelectorAll('h3');
+            allocationTitles.forEach(h3 => {
+                if (h3.textContent.includes('Alocação Baseada em CTR') && !h3.textContent.includes('Conversão')) {
+                    h3.innerHTML = t.ctrBasedAllocation;
+                } else if (h3.textContent.includes('Alocação Baseada em CTR + Conversão') || h3.textContent.includes('CTR + Conversion')) {
+                    h3.innerHTML = t.conversionBasedAllocation;
+                }
+            });
         }
         
         function initializeCharts() {
@@ -1061,16 +1273,33 @@
         // Simulation Functions
         function addSimVariant() {
             const variantsList = document.getElementById('sim-variants-list');
-            const colors = ['#f0ad4e', '#d9534f', '#17a2b8', '#28a745', '#6f42c1', '#fd7e14'];
-            const randomColor = colors[Math.floor(Math.random() * colors.length)];
+            const colors = [
+                {value: '#f0ad4e', text: '🟡 Amarelo'},
+                {value: '#d9534f', text: '🔴 Vermelho'},
+                {value: '#17a2b8', text: '🔷 Azul Claro'},
+                {value: '#6f42c1', text: '🟣 Roxo'},
+                {value: '#fd7e14', text: '🟠 Laranja'}
+            ];
+            const randomColorIndex = Math.floor(Math.random() * colors.length);
             
             const variantDiv = document.createElement('div');
             variantDiv.className = 'variant-row';
+            
+            let colorOptions = '';
+            colors.forEach((color, index) => {
+                const selected = index === randomColorIndex ? ' selected' : '';
+                colorOptions += `<option value="${color.value}"${selected}>${color.text}</option>`;
+            });
+            
             variantDiv.innerHTML = 
                 '<input type="text" class="form-control" placeholder="Nome" value="variant_' + (variantsList.children.length + 1) + '" required>' +
                 '<input type="number" class="form-control" placeholder="CTR Real (%)" value="2.8" step="0.1" min="0" max="100" required>' +
                 '<input type="number" class="form-control" placeholder="Conv Rate (%)" value="16" step="0.1" min="0" max="100" required>' +
-                '<input type="text" class="form-control" placeholder="Cor" value="' + randomColor + '" required>' +
+                '<select class="form-control" required>' +
+                '<option value="#4a90e2">🔵 Azul</option>' +
+                '<option value="#5cb85c">🟢 Verde</option>' +
+                colorOptions +
+                '</select>' +
                 '<button type="button" class="btn btn-danger btn-sm" onclick="removeSimVariant(this)">✕</button>';
             variantsList.appendChild(variantDiv);
         }
@@ -1087,20 +1316,21 @@
             const variants = [];
             document.querySelectorAll('#sim-variants-list .variant-row').forEach(function(row) {
                 const inputs = row.querySelectorAll('input');
+                const select = row.querySelector('select');
                 variants.push({
                     name: inputs[0].value,
                     trueCTR: parseFloat(inputs[1].value) / 100,
                     trueConvRate: parseFloat(inputs[2].value) / 100,
-                    color: inputs[3].value
+                    color: select.value
                 });
             });
 
             if (variants.length < 2) {
-                document.getElementById('simulation-message').innerHTML = '<div class="alert alert-warning">⚠️ Adicione pelo menos 2 variantes para simular</div>';
+                document.getElementById('simulation-message').innerHTML = '<div class="alert alert-warning">' + translations[currentLanguage].addTwoVariants + '</div>';
                 return;
             }
 
-            document.getElementById('simulation-message').innerHTML = '<div class="alert alert-warning">🔄 Executando simulação...</div>';
+            document.getElementById('simulation-message').innerHTML = '<div class="alert alert-warning">' + translations[currentLanguage].simulationRunning + '</div>';
             
             // Run Thompson Sampling simulation
             const results = simulateThompsonSampling(variants, days, traffic, runs);
