@@ -509,6 +509,7 @@
         <!-- Tabs -->
         <div class="tabs">
             <button class="tab active" onclick="switchTab(event, 'experiments')">Experimentos</button>
+            <button class="tab" onclick="switchTab(event, 'upload')">📤 Upload de Dados</button>
             <button class="tab" onclick="switchTab(event, 'analysis')">Análise</button>
             <button class="tab" onclick="switchTab(event, 'simulation')">Simulação</button>
             <button class="tab" onclick="switchTab(event, 'settings')">Configurações</button>
@@ -564,6 +565,7 @@
                         <div class="btn-group">
                             <button type="submit" class="btn btn-success">Enviar Dados</button>
                             <button type="button" class="btn btn-primary" onclick="loadSampleData()">Carregar Exemplo</button>
+                            <button type="button" class="btn btn-warning" onclick="downloadTemplate()">📊 Modelo de Dados</button>
                         </div>
                         <div id="events-message"></div>
                     </form>
@@ -701,6 +703,57 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+        
+        <!-- Upload Tab -->
+        <div id="upload-tab" class="tab-content">
+            <div class="grid grid-2">
+                <!-- Download Template -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">📊 Modelo de Dados</h2>
+                    </div>
+                    <div class="alert alert-warning">
+                        <strong>Estrutura do CSV:</strong><br>
+                        • experiment_id, date, variant_name, impressions, clicks, conversions<br>
+                        • Formato de data: YYYY-MM-DD<br>
+                        • Cliques ≤ Impressões, Conversões ≤ Cliques
+                    </div>
+                    <p>Baixe o modelo de dados CSV com exemplos de 14 dias de dados realistas para 3 variantes (control, variant_a, variant_b).</p>
+                    <button class="btn btn-primary" onclick="downloadTemplate()">
+                        📥 Baixar Modelo CSV
+                    </button>
+                </div>
+                
+                <!-- Upload File -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">📤 Upload de Dados</h2>
+                    </div>
+                    <form id="upload-form" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label class="form-label">Selecionar Arquivo CSV</label>
+                            <input type="file" class="form-control" id="csv-file" accept=".csv" required>
+                            <small style="color: #666; margin-top: 0.5rem; display: block;">
+                                Apenas arquivos .csv são aceitos
+                            </small>
+                        </div>
+                        <button type="submit" class="btn btn-success">
+                            🚀 Enviar Dados
+                        </button>
+                    </form>
+                    <div id="upload-message"></div>
+                </div>
+            </div>
+            
+            <!-- Upload Results -->
+            <div id="upload-results" class="card" style="display: none; margin-top: 2rem;">
+                <div class="card-header">
+                    <h2 class="card-title">Resultado do Upload</h2>
+                </div>
+                <div id="upload-summary"></div>
+                <div id="upload-errors" style="margin-top: 1rem;"></div>
             </div>
         </div>
         
@@ -1546,6 +1599,130 @@
             }, 5000);
         }
 
+        // Download Template Function
+        async function downloadTemplate() {
+            try {
+                const response = await fetch(`${API_URL}/download-template`);
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = 'modelo_dados_bandit.csv';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                } else {
+                    alert('❌ Erro ao baixar modelo de dados');
+                }
+            } catch (error) {
+                console.error('Erro ao baixar template:', error);
+                alert('❌ Erro de conexão ao baixar modelo');
+            }
+        }
+        
+        // Upload Form Handler
+        document.getElementById('upload-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const fileInput = document.getElementById('csv-file');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showMessage('upload-message', '❌ Por favor, selecione um arquivo CSV', 'danger');
+                return;
+            }
+            
+            if (!file.name.endsWith('.csv')) {
+                showMessage('upload-message', '❌ Apenas arquivos CSV são aceitos', 'danger');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            try {
+                showMessage('upload-message', '⏳ Processando arquivo...', 'warning');
+                
+                const response = await fetch(`${API_URL}/upload-data`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    // Show success message
+                    showMessage('upload-message', 
+                        `✅ Upload concluído! ${result.processed_rows} linhas processadas de ${result.total_rows} total`, 
+                        'success'
+                    );
+                    
+                    // Display detailed results
+                    displayUploadResults(result);
+                    
+                    // Update header stats
+                    updateHeaderStats();
+                    
+                    // Clear file input
+                    fileInput.value = '';
+                    
+                } else {
+                    showMessage('upload-message', 
+                        `❌ Erro no upload: ${result.detail || 'Erro desconhecido'}`, 
+                        'danger'
+                    );
+                }
+                
+            } catch (error) {
+                console.error('Erro no upload:', error);
+                showMessage('upload-message', '❌ Erro de conexão durante upload', 'danger');
+            }
+        });
+        
+        // Display Upload Results
+        function displayUploadResults(result) {
+            const resultsDiv = document.getElementById('upload-results');
+            const summaryDiv = document.getElementById('upload-summary');
+            const errorsDiv = document.getElementById('upload-errors');
+            
+            // Show results section
+            resultsDiv.style.display = 'block';
+            
+            // Summary
+            const successRate = result.total_rows > 0 ? 
+                ((result.processed_rows / result.total_rows) * 100).toFixed(1) : 0;
+            
+            summaryDiv.innerHTML = `
+                <div class="alert alert-${result.status === 'success' ? 'success' : 'warning'}">
+                    <h4>📊 Resumo do Upload</h4>
+                    <p><strong>Linhas processadas:</strong> ${result.processed_rows} de ${result.total_rows} (${successRate}%)</p>
+                    <p><strong>Status:</strong> ${result.status === 'success' ? '✅ Sucesso' : '⚠️ Parcial'}</p>
+                    ${result.total_errors > 0 ? `<p><strong>Erros encontrados:</strong> ${result.total_errors}</p>` : ''}
+                </div>
+            `;
+            
+            // Errors
+            if (result.errors && result.errors.length > 0) {
+                errorsDiv.innerHTML = `
+                    <div class="alert alert-danger">
+                        <h4>❌ Erros Encontrados</h4>
+                        <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
+                            ${result.errors.map(error => `<li>${error}</li>`).join('')}
+                        </ul>
+                        ${result.total_errors > result.errors.length ? 
+                            `<p><small>... e mais ${result.total_errors - result.errors.length} erros</small></p>` : 
+                            ''
+                        }
+                    </div>
+                `;
+            } else {
+                errorsDiv.innerHTML = '';
+            }
+        }
+        
         // Reset All Data
         async function resetAllData() {
             if (confirm('⚠️ Isso irá apagar TODOS os dados salvos. Tem certeza?')) {

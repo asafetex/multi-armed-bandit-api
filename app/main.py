@@ -3,9 +3,9 @@ Multi-Armed Bandit Optimization API
 Main FastAPI application with SQL integration
 """
 
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, FileResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import func, text
 from typing import List
@@ -447,6 +447,132 @@ async def migrate_database(db: Session = Depends(get_db)):
         db.rollback()
         logger.error(f"Database migration failed: {e}")
         raise HTTPException(status_code=500, detail=f"Migration failed: {str(e)}")
+
+@app.get("/download-template")
+async def download_template():
+    """Download CSV template for bulk data upload"""
+    template_path = "modelo_dados_bandit.csv"
+    if os.path.exists(template_path):
+        return FileResponse(
+            path=template_path,
+            filename="modelo_dados_bandit.csv",
+            media_type="text/csv"
+        )
+    else:
+        raise HTTPException(status_code=404, detail="Template file not found")
+
+@app.post("/upload-data")
+async def upload_data(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+    """Upload bulk data from CSV file"""
+    import csv
+    import io
+    from datetime import date as date_type
+    from app.models import DailyMetric
+    
+    try:
+        # Validate file type
+        if not file.filename.endswith('.csv'):
+            raise HTTPException(status_code=400, detail="Only CSV files are allowed")
+        
+        # Read file content
+        content = await file.read()
+        csv_content = content.decode('utf-8')
+        
+        # Parse CSV
+        csv_reader = csv.DictReader(io.StringIO(csv_content))
+        
+        # Validate headers
+        expected_headers = {'experiment_id', 'date', 'variant_name', 'impressions', 'clicks', 'conversions'}
+        if not expected_headers.issubset(set(csv_reader.fieldnames)):
+            raise HTTPException(
+                status_code=400, 
+                detail=f"CSV must contain headers: {', '.join(expected_headers)}"
+            )
+        
+        processed_rows = 0
+        errors = []
+        
+        for row_num, row in enumerate(csv_reader, start=2):  # Start at 2 because row 1 is headers
+            try:
+                # Parse and validate data
+                experiment_id = int(row['experiment_id'])
+                date_str = row['date']
+                variant_name = row['variant_name'].strip()
+                impressions = int(row['impressions'])
+                clicks = int(row['clicks'])
+                conversions = int(row.get('conversions', 0))
+                
+                # Validate business rules
+                if clicks > impressions:
+                    errors.append(f"Row {row_num}: clicks ({clicks}) cannot be greater than impressions ({impressions})")
+                    continue
+                
+                if conversions > clicks:
+                    errors.append(f"Row {row_num}: conversions ({conversions}) cannot be greater than clicks ({clicks})")
+                    continue
+                
+                # Check if experiment exists
+                experiment = db.query(Experiment).filter_by(id=experiment_id).first()
+                if not experiment:
+                    errors.append(f"Row {row_num}: experiment_id {experiment_id} not found")
+                    continue
+                
+                # Parse date
+                try:
+                    parsed_date = date_type.fromisoformat(date_str)
+                except ValueError:
+                    errors.append(f"Row {row_num}: invalid date format '{date_str}'. Use YYYY-MM-DD")
+                    continue
+                
+                # Check if record already exists
+                existing = db.query(DailyMetric).filter(
+                    DailyMetric.experiment_id == experiment_id,
+                    DailyMetric.variant_name == variant_name,
+                    DailyMetric.date == parsed_date
+                ).first()
+                
+                if existing:
+                    # Update existing record
+                    existing.impressions = impressions
+                    existing.clicks = clicks
+                    existing.conversions = conversions
+                else:
+                    # Create new record
+                    metric = DailyMetric(
+                        experiment_id=experiment_id,
+                        variant_name=variant_name,
+                        date=parsed_date,
+                        impressions=impressions,
+                        clicks=clicks,
+                        conversions=conversions
+                    )
+                    db.add(metric)
+                
+                processed_rows += 1
+                
+            except ValueError as e:
+                errors.append(f"Row {row_num}: invalid data format - {str(e)}")
+            except Exception as e:
+                errors.append(f"Row {row_num}: {str(e)}")
+        
+        # Commit if we have processed rows
+        if processed_rows > 0:
+            db.commit()
+        
+        return {
+            "status": "success" if processed_rows > 0 else "error",
+            "processed_rows": processed_rows,
+            "total_rows": csv_reader.line_num - 1,  # Subtract header row
+            "errors": errors[:10],  # Limit errors to first 10
+            "total_errors": len(errors)
+        }
+        
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error processing file: {str(e)}")
 
 @app.post("/reset_data")
 async def reset_data(db: Session = Depends(get_db)):

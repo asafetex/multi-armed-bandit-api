@@ -32,11 +32,13 @@ This project implements a robust solution for A/B test optimization using the Mu
 - ✅ Production logging and monitoring
 
 ### Dashboard Frontend
-- ✅ Modern and responsive interface
+- ✅ Modern and responsive interface with **Dark Mode** 🌙
 - ✅ Interactive charts (CTR, Allocation, Regret, Confidence)
 - ✅ Scenario simulator
 - ✅ Advanced algorithm settings
 - ✅ Real-time performance analysis
+- ✅ Elegant theme switching with persistent preferences
+- ✅ Professional dark theme with smooth transitions
 
 ### Production Features
 - ✅ Database connection pooling
