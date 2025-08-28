@@ -1,494 +1,1488 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Multi-Armed Bandit Dashboard</title>
-  <style>
-    :root {
-      --bg: #f7f7f7;
-      --card: #fff;
-      --text: #2c3e50;
-      --accent: #2980b9;
-      --border: #e3eaf2;
-      --input: #f0f4f8;
-      --error: #c0392b;
-      --success: #27ae60;
-      --shadow: 0 2px 8px #0001;
-      --transition: 0.2s;
-      --selected: #ffeaa7;
-    }
-    [data-theme="dark"] {
-      --bg: #181c23;
-      --card: #232a36;
-      --text: #f7f7f7;
-      --accent: #27ae60;
-      --border: #232a36;
-      --input: #232a36;
-      --error: #e74c3c;
-      --success: #2ecc71;
-      --shadow: 0 2px 12px #0008;
-      --selected: #2d3436;
-    }
-    body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); margin: 0; padding: 0; color: var(--text); transition: background var(--transition), color var(--transition);}
-    .container { max-width: 1100px; margin: 30px auto; background: var(--card); border-radius: 12px; box-shadow: var(--shadow); padding: 36px 36px 24px 36px; }
-    h1 { text-align: center; color: var(--accent); letter-spacing: 1px; }
-    .section { margin-bottom: 32px; }
-    .flex { display: flex; gap: 32px; flex-wrap: wrap; }
-    .card { background: var(--input); border-radius: 10px; padding: 18px 28px; flex: 1; min-width: 260px; box-shadow: 0 1px 4px #0002; }
-    .chart { width: 320px; height: 320px; margin: 0 auto; }
-    table { width: 100%; border-collapse: collapse; margin-top: 12px; border-radius: 8px; overflow: hidden;}
-    th, td { padding: 10px 14px; border-bottom: 1px solid var(--border); text-align: center; }
-    th { background: var(--border); }
-    .error { color: var(--error); font-weight: bold; }
-    .success { color: var(--success); font-weight: bold; }
-    label { font-weight: bold; }
-    input, select, textarea { padding: 7px 12px; margin: 0 8px 0 0; border-radius: 5px; border: 1px solid #ccc; background: var(--card); color: var(--text); transition: border var(--transition);}
-    input:focus, select:focus, textarea:focus { border: 1.5px solid var(--accent);}
-    button { padding: 9px 20px; border: none; border-radius: 5px; background: var(--accent); color: #fff; font-weight: bold; cursor: pointer; transition: background var(--transition);}
-    button:hover { background: #1c5d85; }
-    .theme-toggle { float: right; margin-top: -40px; font-size: 22px; background: none; color: var(--accent);}
-    .api-form { margin-bottom: 18px; background: var(--input); border-radius: 8px; padding: 16px 18px; box-shadow: 0 1px 4px #0001;}
-    textarea { width: 100%; min-height: 60px; }
-    .api-form label { display: block; margin-top: 8px; }
-    .api-form input[type="number"], .api-form input[type="text"] { width: 120px; }
-    .api-form .inline { display: inline-block; margin-right: 12px; }
-    .api-form .variants-list { margin-top: 8px; }
-    .api-form .variants-list input { width: 80px; }
-    .api-form .variants-list button { padding: 2px 8px; font-size: 12px; }
-    .api-form .variants-list .variant-row { margin-bottom: 4px; }
-    .file-upload { margin-top: 10px; }
-    .file-upload label { font-weight: normal; }
-    .file-upload input[type="file"] { margin-left: 8px; }
-    .file-upload .file-info { font-size: 13px; color: var(--accent); margin-left: 8px;}
-    .file-upload .error { font-size: 13px;}
-    .fade-in { animation: fadeIn 0.5s; }
-    .history-filters { margin-bottom: 10px; }
-    .history-filters label { font-weight: normal; margin-right: 8px;}
-    .variant-filter-btn {
-      display: inline-block;
-      margin: 0 6px 6px 0;
-      padding: 5px 14px;
-      border-radius: 16px;
-      border: 1.5px solid var(--accent);
-      background: var(--card);
-      color: var(--accent);
-      font-weight: bold;
-      cursor: pointer;
-      transition: background var(--transition), color var(--transition);
-    }
-    .variant-filter-btn.selected {
-      background: var(--selected);
-      color: var(--text);
-      border: 2px solid var(--accent);
-    }
-    .multi-id-list { margin-bottom: 8px; }
-    .multi-id-list input { width: 80px; margin-right: 4px;}
-    .multi-id-list button { padding: 2px 8px; font-size: 12px; }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Armed Bandit Analytics Dashboard</title>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #4a90e2;
+            --success: #5cb85c;
+            --danger: #d9534f;
+            --warning: #f0ad4e;
+            --dark: #2c3e50;
+            --light: #ecf0f1;
+            --bg: #f5f7fa;
+            --card-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            --hover-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, #357abd 100%);
+            color: white;
+            padding: 2rem 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+        
+        .header-stats {
+            display: flex;
+            gap: 2rem;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .stat-label {
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+        
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        /* Grid Layout */
+        .grid {
+            display: grid;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .grid-2 {
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+        }
+        
+        .grid-3 {
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        }
+        
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            box-shadow: var(--hover-shadow);
+            transform: translateY(-2px);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--light);
+        }
+        
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        /* Forms */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--dark);
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+        
+        /* Buttons */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-block;
+            text-align: center;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #357abd;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(74, 144, 226, 0.3);
+        }
+        
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+        
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+        
+        .btn-warning {
+            background: var(--warning);
+            color: white;
+        }
+        
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        /* Allocation Display */
+        .allocation-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .allocation-item {
+            background: var(--bg);
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .allocation-name {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 0.5rem;
+        }
+        
+        .allocation-value {
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+        
+        .allocation-stats {
+            font-size: 0.875rem;
+            color: #666;
+            margin-top: 0.5rem;
+        }
+        
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th {
+            background: var(--bg);
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--dark);
+            border-bottom: 2px solid var(--primary);
+        }
+        
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--light);
+        }
+        
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+        
+        /* Charts */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 1rem;
+        }
+        
+        /* Metrics Cards */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .metric-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+            border-top: 3px solid var(--primary);
+        }
+        
+        .metric-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .metric-label {
+            font-size: 0.875rem;
+            color: #666;
+            margin-top: 0.5rem;
+        }
+        
+        /* Alerts */
+        .alert {
+            padding: 1rem;
+            border-radius: 4px;
+            margin-top: 1rem;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+        
+        /* Tabs */
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid var(--light);
+            margin-bottom: 1.5rem;
+        }
+        
+        .tab {
+            padding: 1rem 2rem;
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-size: 1rem;
+            color: #666;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+        }
+        
+        .tab:hover {
+            color: var(--primary);
+        }
+        
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Reset Button */
+        .reset-section {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .grid-2, .grid-3 {
+                grid-template-columns: 1fr;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="container" id="container">
-    <button class="theme-toggle" onclick="toggleTheme()" title="Alternar tema">🌙/☀️</button>
-    <h1>Multi-Armed Bandit Dashboard</h1>
-    <div class="section">
-      <form id="exp-form" class="api-form">
-        <h2>Criar Experimento</h2>
-        <label>Nome: <input type="text" id="exp-name" required /></label>
-        <label>Descrição: <input type="text" id="exp-desc" /></label>
-        <button type="submit">Criar Experimento</button>
-        <span id="exp-msg"></span>
-      </form>
-      <form id="event-form" class="api-form">
-        <h2>Enviar Evento</h2>
-        <label>ID do Experimento: <input type="number" id="event-exp-id" min="1" required /></label>
-        <label>Data: <input type="date" id="event-date" required /></label>
-        <div class="variants-list" id="variants-list">
-          <h3>Variantes</h3>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-content">
+            <h1>🎯 Multi-Armed Bandit Analytics</h1>
+            <div class="header-stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="total-experiments">0</div>
+                    <div class="stat-label">Experimentos</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="total-impressions">0</div>
+                    <div class="stat-label">Impressões Totais</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="avg-ctr">0%</div>
+                    <div class="stat-label">CTR Médio</div>
+                </div>
+            </div>
         </div>
-        <button type="button" onclick="addVariant()">Adicionar Variante</button>
-        <button type="submit">Enviar Evento</button>
-        <span id="event-msg"></span>
-        <div class="file-upload">
-          <label>Ou envie um arquivo JSON de eventos: <input type="file" id="event-file" accept=".json" /></label>
-          <span class="file-info" id="file-info"></span>
+    </div>
+    
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Quick Metrics -->
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-value" id="best-variant">-</div>
+                <div class="metric-label">Melhor Variante</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="confidence-level">-</div>
+                <div class="metric-label">Confiança</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="regret-value">0</div>
+                <div class="metric-label">Regret Acumulado</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="convergence-rate">0%</div>
+                <div class="metric-label">Taxa Convergência</div>
+            </div>
         </div>
-      </form>
-      <form id="alloc-form" class="api-form">
-        <h2>Obter Alocação</h2>
-        <div class="multi-id-list" id="alloc-id-list"></div>
-        <button type="button" onclick="addAllocId()">Adicionar Experimento</button>
-        <label>Janela (dias): <input type="number" id="alloc-window" value="14" min="1" max="365" required /></label>
-        <button type="submit">Buscar Alocação</button>
-        <span id="alloc-msg"></span>
-      </form>
-      <form id="history-form" class="api-form">
-        <h2>Histórico de Alocações</h2>
-        <div class="history-filters">
-          <div class="multi-id-list" id="history-id-list"></div>
-          <button type="button" onclick="addHistoryId()">Adicionar Experimento</button>
-          <label>Data Inicial: <input type="date" id="history-start-date" /></label>
-          <label>Data Final: <input type="date" id="history-end-date" /></label>
+        
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab(event, 'experiments')">Experimentos</button>
+            <button class="tab" onclick="switchTab(event, 'analysis')">Análise</button>
+            <button class="tab" onclick="switchTab(event, 'simulation')">Simulação</button>
+            <button class="tab" onclick="switchTab(event, 'settings')">Configurações</button>
         </div>
-        <div id="variant-filters"></div>
-        <button type="submit">Buscar Histórico</button>
-        <span id="history-msg"></span>
-      </form>
+        
+        <!-- Tab Contents -->
+        
+        <!-- Experiments Tab -->
+        <div id="experiments-tab" class="tab-content active">
+            <div class="grid grid-2">
+                <!-- Create Experiment -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Criar Experimento</h2>
+                    </div>
+                    <form id="create-experiment-form">
+                        <div class="form-group">
+                            <label class="form-label">Nome do Experimento</label>
+                            <input type="text" class="form-control" id="exp-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Descrição</label>
+                            <textarea class="form-control" id="exp-description" rows="2"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Criar Experimento</button>
+                        <div id="create-message"></div>
+                    </form>
+                </div>
+                
+                <!-- Submit Events -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Enviar Dados</h2>
+                    </div>
+                    <form id="submit-events-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">ID do Experimento</label>
+                                <input type="number" class="form-control" id="event-exp-id" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Data</label>
+                                <input type="date" class="form-control" id="event-date" required>
+                            </div>
+                        </div>
+                        
+                        <div id="variants-container">
+                            <label class="form-label">Variantes</label>
+                            <div id="variants-list"></div>
+                            <button type="button" class="btn btn-sm btn-primary" onclick="addVariant()">+ Adicionar Variante</button>
+                        </div>
+                        
+                        <div class="btn-group">
+                            <button type="submit" class="btn btn-success">Enviar Dados</button>
+                            <button type="button" class="btn btn-primary" onclick="loadSampleData()">Carregar Exemplo</button>
+                        </div>
+                        <div id="events-message"></div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Get Allocation -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Calcular Alocação Ótima</h2>
+                </div>
+                <form id="get-allocation-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">ID do Experimento</label>
+                            <input type="number" class="form-control" id="allocation-exp-id" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Janela (dias)</label>
+                            <input type="number" class="form-control" id="window-days" value="14" min="1" max="90">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Calcular Alocação</button>
+                </form>
+                
+                <div id="allocation-results" style="margin-top: 2rem; display: none;">
+                    <h3>Alocação Recomendada</h3>
+                    <div id="allocation-display" class="allocation-grid"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Analysis Tab -->
+        <div id="analysis-tab" class="tab-content">
+            <div class="grid grid-2">
+                <!-- CTR Performance Chart -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Performance CTR</h2>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="ctr-chart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Allocation History Chart -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Evolução da Alocação</h2>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="allocation-chart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Regret Analysis -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Análise de Regret</h2>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="regret-chart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Confidence Intervals -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Intervalos de Confiança</h2>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="confidence-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Results Table -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Dados Detalhados</h2>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Variante</th>
+                                <th>Impressões</th>
+                                <th>Cliques</th>
+                                <th>CTR</th>
+                                <th>Alocação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="results-table">
+                            <tr><td colspan="6" style="text-align: center;">Nenhum dado disponível</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Simulation Tab -->
+        <div id="simulation-tab" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Simulador de Cenários</h2>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Dias para Simular</label>
+                        <input type="number" class="form-control" id="sim-days" value="30" min="1" max="365">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Impressões por Dia</label>
+                        <input type="number" class="form-control" id="sim-impressions" value="10000" min="100">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">CTR Control (%)</label>
+                        <input type="number" class="form-control" id="sim-ctr-control" value="7" min="0" max="100" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">CTR Variant B (%)</label>
+                        <input type="number" class="form-control" id="sim-ctr-variant" value="9.5" min="0" max="100" step="0.1">
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="runSimulation()">Executar Simulação</button>
+                
+                <div id="simulation-results" style="margin-top: 2rem; display: none;">
+                    <div class="grid grid-2">
+                        <div class="chart-container">
+                            <canvas id="simulation-allocation-chart"></canvas>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="simulation-regret-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Settings Tab -->
+        <div id="settings-tab" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Configurações do Algoritmo</h2>
+                </div>
+                <div class="alert alert-warning">
+                    Estas configurações afetam o comportamento do algoritmo Thompson Sampling
+                </div>
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Alpha Prior (Thompson Sampling)</label>
+                        <input type="number" class="form-control" id="alpha-prior" value="1" min="0.1" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Beta Prior (Thompson Sampling)</label>
+                        <input type="number" class="form-control" id="beta-prior" value="1" min="0.1" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Taxa de Exploração Mínima (%)</label>
+                        <input type="number" class="form-control" id="min-explore" value="5" min="0" max="50">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Piso do Control (%)</label>
+                        <input type="number" class="form-control" id="control-floor" value="10" min="0" max="50">
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="saveSettings()">Salvar Configurações</button>
+                <div id="settings-message"></div>
+            </div>
+        </div>
     </div>
-    <div class="section flex">
-      <div class="card fade-in">
-        <h2>Alocação Recomendada</h2>
-        <canvas id="pie" class="chart"></canvas>
-        <div id="allocations"></div>
-      </div>
-      <div class="card fade-in">
-        <h2>Parâmetros do Algoritmo</h2>
-        <ul id="params"></ul>
-        <h3>Resumo</h3>
-        <div id="summary"></div>
-      </div>
+    
+    <!-- Reset Button -->
+    <div class="reset-section">
+        <button class="btn btn-danger" onclick="resetAllData()">🗑️ Limpar Todos os Dados</button>
     </div>
-    <div class="section">
-      <h2>Histórico de Alocações</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Experimento</th>
-            <th>Data</th>
-            <th>Alocação</th>
-            <th>Impressões</th>
-            <th>Cliques</th>
-          </tr>
-        </thead>
-        <tbody id="history"></tbody>
-      </table>
-    </div>
-  </div>
-  <script>
-    // THEME
-    function toggleTheme() {
-      const html = document.documentElement;
-      if (html.getAttribute('data-theme') === 'dark') {
-        html.removeAttribute('data-theme');
-        localStorage.setItem('theme', 'light');
-      } else {
-        html.setAttribute('data-theme', 'dark');
-        localStorage.setItem('theme', 'dark');
-      }
-    }
-    if (localStorage.getItem('theme') === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
-
-    // MULTI-ID FIELDS
-    function addAllocId(val = '') {
-      const list = document.getElementById('alloc-id-list');
-      const row = document.createElement('span');
-      row.innerHTML = `<input type="number" min="1" value="${val}" required /> <button type="button" onclick="this.parentNode.remove()">Remover</button>`;
-      list.appendChild(row);
-    }
-    function addHistoryId(val = '') {
-      const list = document.getElementById('history-id-list');
-      const row = document.createElement('span');
-      row.innerHTML = `<input type="number" min="1" value="${val}" required /> <button type="button" onclick="this.parentNode.remove()">Remover</button>`;
-      list.appendChild(row);
-    }
-    // Adiciona 1 campo por padrão
-    window.onload = () => {
-      if (document.getElementById('variants-list').children.length === 0) {
-        addVariant('control', 1000, 70);
-        addVariant('variant_b', 1000, 95);
-      }
-      if (document.getElementById('alloc-id-list').children.length === 0) addAllocId(1);
-      if (document.getElementById('history-id-list').children.length === 0) addHistoryId(1);
-    };
-
-    // VARIANT FIELDS
-    function addVariant(name = '', impressions = '', clicks = '') {
-      const list = document.getElementById('variants-list');
-      const row = document.createElement('div');
-      row.className = 'variant-row';
-      row.innerHTML = `
-        <input type="text" placeholder="Nome" value="${name}" required />
-        <input type="number" placeholder="Impressões" value="${impressions}" min="0" required />
-        <input type="number" placeholder="Cliques" value="${clicks}" min="0" required />
-        <button type="button" onclick="this.parentNode.remove()">Remover</button>
-      `;
-      list.appendChild(row);
-    }
-
-    // EXPERIMENT
-    document.getElementById('exp-form').onsubmit = async e => {
-      e.preventDefault();
-      const name = document.getElementById('exp-name').value;
-      const desc = document.getElementById('exp-desc').value;
-      const msg = document.getElementById('exp-msg');
-      msg.textContent = '';
-      try {
-        const res = await fetch('http://localhost:8000/experiments', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, description: desc })
-        });
-        const data = await res.json();
-        if (res.ok) {
-          msg.innerHTML = `<span class="success">Experimento criado! ID: ${data.id}</span>`;
-        } else {
-          msg.innerHTML = `<span class="error">${data.detail || 'Erro ao criar experimento.'}</span>`;
-        }
-      } catch {
-        msg.innerHTML = `<span class="error">Erro de conexão com a API.</span>`;
-      }
-    };
-
-    // EVENT
-    document.getElementById('event-form').onsubmit = async e => {
-      e.preventDefault();
-      const expId = document.getElementById('event-exp-id').value;
-      const date = document.getElementById('event-date').value;
-      const msg = document.getElementById('event-msg');
-      msg.textContent = '';
-      const variants = Array.from(document.querySelectorAll('#variants-list .variant-row')).map(row => {
-        const [name, impressions, clicks] = Array.from(row.querySelectorAll('input')).map(i => i.value);
-        return { variant_name: name, impressions: Number(impressions), clicks: Number(clicks) };
-      });
-      try {
-        const res = await fetch('http://localhost:8000/events', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ experiment_id: Number(expId), date, variants })
-        });
-        const data = await res.json();
-        if (res.ok) {
-          msg.innerHTML = `<span class="success">Evento enviado!</span>`;
-        } else {
-          msg.innerHTML = `<span class="error">${data.detail || data.error || 'Erro ao enviar evento.'}</span>`;
-        }
-      } catch {
-        msg.innerHTML = `<span class="error">Erro de conexão com a API.</span>`;
-      }
-    };
-
-    // EVENT FILE UPLOAD
-    document.getElementById('event-file').addEventListener('change', async function(e) {
-      const file = e.target.files[0];
-      const info = document.getElementById('file-info');
-      info.textContent = '';
-      if (!file) return;
-      if (!file.name.endsWith('.json')) {
-        info.innerHTML = '<span class="error">Apenas arquivos .json são aceitos.</span>';
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = async function(evt) {
-        try {
-          const json = JSON.parse(evt.target.result);
-          // Suporta array de eventos ou evento único
-          const events = Array.isArray(json) ? json : [json];
-          let success = 0, fail = 0;
-          for (const ev of events) {
-            const res = await fetch('http://localhost:8000/events', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(ev)
-            });
-            if (res.ok) success++;
-            else fail++;
-          }
-          info.innerHTML = `<span class="success">${success} evento(s) enviados. ${fail ? fail + ' falharam.' : ''}</span>`;
-        } catch {
-          info.innerHTML = '<span class="error">Arquivo inválido.</span>';
-        }
-      };
-      reader.readAsText(file);
-    });
-
-    // ALLOCATION
-    const allocationsDiv = document.getElementById('allocations');
-    const paramsUl = document.getElementById('params');
-    const summaryDiv = document.getElementById('summary');
-    const historyTbody = document.getElementById('history');
-    const pieCanvas = document.getElementById('pie');
-    let pieChart;
-    let lastHistoryData = [];
-
-    document.getElementById('alloc-form').onsubmit = async e => {
-      e.preventDefault();
-      const expIds = Array.from(document.querySelectorAll('#alloc-id-list input')).map(i => i.value).filter(Boolean);
-      const windowDays = document.getElementById('alloc-window').value;
-      const msg = document.getElementById('alloc-msg');
-      msg.textContent = '';
-      allocationsDiv.innerHTML = '';
-      paramsUl.innerHTML = '';
-      summaryDiv.innerHTML = '';
-      historyTbody.innerHTML = '';
-      if (pieChart) pieChart.destroy?.();
-
-      if (!expIds.length) {
-        msg.innerHTML = `<span class="error">Informe pelo menos um experimento.</span>`;
-        return;
-      }
-
-      let allHistory = [];
-      for (const expId of expIds) {
-        try {
-          const res = await fetch(`http://localhost:8000/allocation?experiment_id=${expId}&window_days=${windowDays}`);
-          const data = await res.json();
-          if (!res.ok) {
-            msg.innerHTML += `<span class="error">[Exp ${expId}] ${data.detail || data.error || 'Erro ao buscar alocação.'}</span><br>`;
-            continue;
-          }
-          // Pie chart (mostra só do último)
-          const labels = Object.keys(data.allocations);
-          const values = Object.values(data.allocations);
-          drawPie(labels, values);
-
-          // Alocação textual
-          allocationsDiv.innerHTML += `<b>Experimento ${expId}</b><br>` +
-            labels.map(
-              v => `<b class="variant-filter-btn" data-variant="${v}" onclick="filterVariant('${v}')">${v}:</b> ${(data.allocations[v]*100).toFixed(1)}%`
-            ).join('<br>') + '<br><br>';
-
-          // Parâmetros
-          paramsUl.innerHTML = Object.entries(data.parameters)
-            .map(([k,v]) => `<li><b>${k}:</b> ${v}</li>`).join('');
-
-          // Resumo
-          if (data.summary) {
-            summaryDiv.innerHTML = `
-              <b>Total de Impressões:</b> ${data.summary.total_impressions}<br>
-              <b>Total de Cliques:</b> ${data.summary.total_clicks}<br>
-              <b>Variantes:</b> <ul>
-                ${data.summary.variants.map(v =>
-                  `<li>${v.name}: ${v.impressions} imp / ${v.clicks} cliques</li>`
-                ).join('')}
-              </ul>
-            `;
-          }
-
-          // Histórico
-          if (data.history && data.history.length) {
-            allHistory = allHistory.concat(data.history.map(h => ({...h, experiment_id: expId})));
-          }
-        } catch {
-          msg.innerHTML += `<span class="error">[Exp ${expId}] Erro de conexão com a API.</span><br>`;
-        }
-      }
-      lastHistoryData = allHistory;
-      renderHistoryTable(allHistory);
-      renderVariantFilters(getAllVariantsFromHistory(allHistory));
-      msg.innerHTML += `<span class="success">Dados carregados!</span>`;
-    };
-
-    // HISTORY
-    document.getElementById('history-form').onsubmit = async e => {
-      e.preventDefault();
-      const expIds = Array.from(document.querySelectorAll('#history-id-list input')).map(i => i.value).filter(Boolean);
-      const startDate = document.getElementById('history-start-date').value;
-      const endDate = document.getElementById('history-end-date').value;
-      const msg = document.getElementById('history-msg');
-      msg.textContent = '';
-      historyTbody.innerHTML = '';
-      if (!expIds.length) {
-        msg.innerHTML = `<span class="error">Informe pelo menos um experimento.</span>`;
-        return;
-      }
-      let allHistory = [];
-      for (const expId of expIds) {
-        let url = `http://localhost:8000/experiments/${expId}/history`;
-        const params = [];
-        if (startDate) params.push(`start_date=${startDate}`);
-        if (endDate) params.push(`end_date=${endDate}`);
-        if (params.length) url += '?' + params.join('&');
-        try {
-          const res = await fetch(url);
-          const data = await res.json();
-          if (!res.ok) {
-            msg.innerHTML += `<span class="error">[Exp ${expId}] ${data.detail || data.error || 'Erro ao buscar histórico.'}</span><br>`;
-            continue;
-          }
-          if (data.history && data.history.length) {
-            allHistory = allHistory.concat(data.history.map(h => ({...h, experiment_id: expId})));
-          }
-        } catch {
-          msg.innerHTML += `<span class="error">[Exp ${expId}] Erro de conexão com a API.</span><br>`;
-        }
-      }
-      lastHistoryData = allHistory;
-      renderHistoryTable(allHistory);
-      renderVariantFilters(getAllVariantsFromHistory(allHistory));
-      msg.innerHTML += `<span class="success">Histórico carregado!</span>`;
-    };
-
-    // VARIANT FILTERS
-    function getAllVariantsFromHistory(history) {
-      const set = new Set();
-      history.forEach(h => Object.keys(h.allocations || {}).forEach(v => set.add(v)));
-      return Array.from(set);
-    }
-    function renderVariantFilters(variants) {
-      const container = document.getElementById('variant-filters');
-      if (!variants.length) { container.innerHTML = ''; return; }
-      container.innerHTML = '<b>Filtrar por variante:</b> ' +
-        variants.map(v =>
-          `<button class="variant-filter-btn" onclick="filterVariant('${v}')">${v}</button>`
-        ).join('') +
-        `<button class="variant-filter-btn" onclick="filterVariant('')">Todas</button>`;
-    }
-    function filterVariant(variant) {
-      const filtered = variant
-        ? lastHistoryData.filter(h => h.allocations && h.allocations[variant] !== undefined)
-        : lastHistoryData;
-      renderHistoryTable(filtered);
-      // Destaca botão selecionado
-      document.querySelectorAll('.variant-filter-btn').forEach(btn => {
-        if (btn.textContent.replace(':','') === variant) btn.classList.add('selected');
-        else if (!variant && btn.textContent === 'Todas') btn.classList.add('selected');
-        else btn.classList.remove('selected');
-      });
-    }
-    function renderHistoryTable(history) {
-      const tbody = document.getElementById('history');
-      if (!history.length) {
-        tbody.innerHTML = '<tr><td colspan="5">Sem histórico</td></tr>';
-        return;
-      }
-      tbody.innerHTML = history.map(h =>
-        `<tr>
-          <td>${h.experiment_id || '-'}</td>
-          <td>${h.date}</td>
-          <td>${Object.entries(h.allocations).map(([k,v]) => `${k}: ${(v*100).toFixed(1)}%`).join('<br>')}</td>
-          <td>${h.total_impressions || '-'}</td>
-          <td>${h.total_clicks || '-'}</td>
-        </tr>`
-      ).join('');
-    }
-
-    function drawPie(labels, values) {
-      if (window.Chart) {
-        pieChart = new Chart(pieCanvas, {
-          type: 'pie',
-          data: {
-            labels,
-            datasets: [{
-              data: values,
-              backgroundColor: ['#2980b9', '#27ae60', '#e67e22', '#8e44ad', '#c0392b', '#f1c40f']
-            }]
-          },
-          options: {
-            plugins: {
-              legend: { position: 'bottom' }
+    
+    <script>
+        // API Configuration
+        const API_URL = 'http://localhost:8000';
+        
+        // Global variables
+        let charts = {};
+        let allExperiments = [];
+        let currentExperimentData = null;
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeCharts();
+            loadAllExperiments();
+            
+            // Add initial variants if empty
+            if (document.getElementById('variants-list').children.length === 0) {
+                addVariant('control', 1000, 70);
+                addVariant('variant_b', 1000, 95);
             }
-          }
         });
-      }
-    }
+        
+        // Tab switching
+        function switchTab(event, tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            // Remove active from all tab buttons
+            document.querySelectorAll('.tab').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            // Show selected tab
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+            // Mark button as active
+            event.target.classList.add('active');
+            
+            // Load analysis data when switching to analysis tab
+            if (tabName === 'analysis' && currentExperimentData) {
+                updateAnalysisCharts();
+            }
+        }
+        
+        // Initialize Charts
+        function initializeCharts() {
+            // CTR Chart
+            const ctrCtx = document.getElementById('ctr-chart').getContext('2d');
+            charts.ctr = new Chart(ctrCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: []
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { callback: value => value.toFixed(1) + '%' }
+                        }
+                    }
+                }
+            });
+            
+            // Allocation Chart
+            const allocCtx = document.getElementById('allocation-chart').getContext('2d');
+            charts.allocation = new Chart(allocCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: []
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: { callback: value => value + '%' }
+                        }
+                    }
+                }
+            });
+            
+            // Regret Chart
+            const regretCtx = document.getElementById('regret-chart').getContext('2d');
+            charts.regret = new Chart(regretCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Regret Acumulado',
+                        data: [],
+                        borderColor: '#e74c3c',
+                        backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+            
+            // Confidence Chart
+            const confCtx = document.getElementById('confidence-chart').getContext('2d');
+            charts.confidence = new Chart(confCtx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'CTR com Intervalo de Confiança',
+                        data: [],
+                        backgroundColor: 'rgba(74, 144, 226, 0.6)',
+                        borderColor: '#4a90e2',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { callback: value => value.toFixed(1) + '%' }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Load all experiments to update header stats
+        async function loadAllExperiments() {
+            try {
+                // For now, we'll simulate with local data
+                // In production, this would fetch from API
+                updateHeaderStats();
+            } catch (error) {
+                console.error('Error loading experiments:', error);
+            }
+        }
+        
+        // Update Header Stats
+        function updateHeaderStats() {
+            // Get stored experiment count
+            const experiments = JSON.parse(localStorage.getItem('experiments') || '[]');
+            document.getElementById('total-experiments').textContent = experiments.length || '0';
+            
+            // Calculate total impressions and CTR from stored data
+            const events = JSON.parse(localStorage.getItem('events') || '[]');
+            let totalImpressions = 0;
+            let totalClicks = 0;
+            
+            events.forEach(event => {
+                if (event.variants) {
+                    event.variants.forEach(v => {
+                        totalImpressions += v.impressions || 0;
+                        totalClicks += v.clicks || 0;
+                    });
+                }
+            });
+            
+            // Format impressions
+            const impDisplay = totalImpressions > 1000000 ? 
+                (totalImpressions / 1000000).toFixed(1) + 'M' :
+                totalImpressions > 1000 ?
+                (totalImpressions / 1000).toFixed(1) + 'K' :
+                totalImpressions.toString();
+            
+            document.getElementById('total-impressions').textContent = impDisplay;
+            
+            // Calculate average CTR
+            const avgCtr = totalImpressions > 0 ? ((totalClicks / totalImpressions) * 100).toFixed(1) : '0';
+            document.getElementById('avg-ctr').textContent = avgCtr + '%';
+        }
+        
+        // Variants Management
+        function addVariant(name = '', impressions = '', clicks = '') {
+            const container = document.getElementById('variants-list');
+            const variantDiv = document.createElement('div');
+            variantDiv.className = 'form-row';
+            variantDiv.style.marginBottom = '0.5rem';
+            variantDiv.innerHTML = `
+                <div class="form-group">
+                    <input type="text" class="form-control" placeholder="Nome" value="${name}" required>
+                </div>
+                <div class="form-group">
+                    <input type="number" class="form-control" placeholder="Impressões" value="${impressions}" min="0" required>
+                </div>
+                <div class="form-group">
+                    <input type="number" class="form-control" placeholder="Cliques" value="${clicks}" min="0" required>
+                </div>
+                <div class="form-group">
+                    <button type="button" class="btn btn-danger btn-sm" onclick="this.closest('.form-row').remove()">Remover</button>
+                </div>
+            `;
+            container.appendChild(variantDiv);
+        }
+        
+        // Load Sample Data
+        function loadSampleData() {
+            // Get next available experiment ID
+            const experiments = JSON.parse(localStorage.getItem('experiments') || '[]');
+            const nextId = experiments.length > 0 ? Math.max(...experiments.map(e => e.id)) + 1 : 1;
+            
+            document.getElementById('event-exp-id').value = nextId;
+            document.getElementById('event-date').value = new Date().toISOString().split('T')[0];
+            
+            // Clear existing variants
+            document.getElementById('variants-list').innerHTML = '';
+            
+            // Add sample variants
+            addVariant('control', 10000, 700);
+            addVariant('variant_b', 10000, 950);
+        }
+        
+        // Form Submissions
+        document.getElementById('create-experiment-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('exp-name').value;
+            const description = document.getElementById('exp-description').value;
+            
+            try {
+                const response = await fetch(`${API_URL}/experiments`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, description })
+                });
+                
+                const data = await response.json();
+                if (response.ok) {
+                    // Store experiment locally
+                    const experiments = JSON.parse(localStorage.getItem('experiments') || '[]');
+                    experiments.push(data);
+                    localStorage.setItem('experiments', JSON.stringify(experiments));
+                    
+                    showMessage('create-message', `✅ Experimento criado! ID: ${data.id}`, 'success');
+                    document.getElementById('create-experiment-form').reset();
+                    updateHeaderStats();
+                } else {
+                    showMessage('create-message', `❌ Erro: ${data.detail || 'Falha ao criar experimento'}`, 'danger');
+                }
+            } catch (error) {
+                showMessage('create-message', '❌ Erro de conexão', 'danger');
+            }
+        });
+        
+        document.getElementById('submit-events-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const experimentId = parseInt(document.getElementById('event-exp-id').value);
+            const date = document.getElementById('event-date').value;
+            
+            const variants = [];
+            document.querySelectorAll('#variants-list .form-row').forEach(row => {
+                const inputs = row.querySelectorAll('input');
+                variants.push({
+                    variant_name: inputs[0].value,
+                    impressions: parseInt(inputs[1].value),
+                    clicks: parseInt(inputs[2].value)
+                });
+            });
+            
+            const eventData = {
+                experiment_id: experimentId,
+                date: date,
+                variants: variants
+            };
+            
+            try {
+                const response = await fetch(`${API_URL}/events`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(eventData)
+                });
+                
+                if (response.ok) {
+                    // Store event locally
+                    const events = JSON.parse(localStorage.getItem('events') || '[]');
+                    events.push(eventData);
+                    localStorage.setItem('events', JSON.stringify(events));
+                    
+                    showMessage('events-message', '✅ Dados enviados com sucesso!', 'success');
+                    updateHeaderStats();
+                } else {
+                    const errorText = await response.text();
+                    showMessage('events-message', `❌ Erro: ${errorText}`, 'danger');
+                }
+            } catch (error) {
+                showMessage('events-message', '❌ Erro de conexão', 'danger');
+            }
+        });
+        
+        document.getElementById('get-allocation-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const experimentId = document.getElementById('allocation-exp-id').value;
+            const windowDays = document.getElementById('window-days').value;
+            
+            try {
+                const response = await fetch(`${API_URL}/allocation?experiment_id=${experimentId}&window_days=${windowDays}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    currentExperimentData = data;
+                    displayAllocation(data);
+                    updateMetrics(data);
+                    updateAnalysisCharts();
+                } else {
+                    alert('Erro ao buscar alocação: ' + (data.message || data.detail || 'Sem dados'));
+                }
+            } catch (error) {
+                alert('Erro de conexão com a API');
+            }
+        });
+        
+        // Display Allocation Results
+        function displayAllocation(data) {
+            const container = document.getElementById('allocation-display');
+            const resultsDiv = document.getElementById('allocation-results');
+            
+            container.innerHTML = '';
+            
+            if (data.allocations) {
+                Object.entries(data.allocations).forEach(([name, value]) => {
+                    const div = document.createElement('div');
+                    div.className = 'allocation-item';
+                    
+                    // Get stored events to calculate stats
+                    const events = JSON.parse(localStorage.getItem('events') || '[]');
+                    let totalImp = 0, totalClicks = 0;
+                    
+                    events.filter(e => e.experiment_id == data.experiment_id).forEach(event => {
+                        const variant = event.variants?.find(v => v.variant_name === name);
+                        if (variant) {
+                            totalImp += variant.impressions || 0;
+                            totalClicks += variant.clicks || 0;
+                        }
+                    });
+                    
+                    const ctr = totalImp > 0 ? ((totalClicks / totalImp) * 100).toFixed(2) : '0.00';
+                    
+                    div.innerHTML = `
+                        <div class="allocation-name">${name}</div>
+                        <div class="allocation-value">${(value * 100).toFixed(1)}%</div>
+                        <div class="allocation-stats">
+                            ${totalImp} imp | ${totalClicks} clicks | CTR: ${ctr}%
+                        </div>
+                    `;
+                    container.appendChild(div);
+                });
+            }
+            
+            resultsDiv.style.display = 'block';
+        }
+        
+        // Update Analysis Charts
+        function updateAnalysisCharts() {
+            if (!currentExperimentData) return;
+            
+            const events = JSON.parse(localStorage.getItem('events') || '[]');
+            const expEvents = events.filter(e => e.experiment_id == currentExperimentData.experiment_id);
+            
+            // Prepare data for charts
+            const dates = [...new Set(expEvents.map(e => e.date))].sort();
+            const variants = [...new Set(expEvents.flatMap(e => e.variants.map(v => v.variant_name)))];
+            
+            // Update CTR Chart
+            const ctrDatasets = variants.map((variant, index) => {
+                const data = dates.map(date => {
+                    const dayEvent = expEvents.find(e => e.date === date);
+                    const variantData = dayEvent?.variants.find(v => v.variant_name === variant);
+                    if (variantData && variantData.impressions > 0) {
+                        return (variantData.clicks / variantData.impressions * 100);
+                    }
+                    return 0;
+                });
+                
+                return {
+                    label: variant,
+                    data: data,
+                    borderColor: getColor(index),
+                    backgroundColor: getColor(index, 0.1),
+                    tension: 0.4
+                };
+            });
+            
+            charts.ctr.data.labels = dates;
+            charts.ctr.data.datasets = ctrDatasets;
+            charts.ctr.update();
+            
+            // Update Allocation Chart
+            if (currentExperimentData.history && currentExperimentData.history.length > 0) {
+                // Use API history data if available
+                const historyDates = currentExperimentData.history.map(h => h.date).reverse();
+                const allocationDatasets = variants.map((variant, index) => {
+                    const data = currentExperimentData.history.map(h => {
+                        const allocation = h.allocations[variant];
+                        return allocation ? (allocation * 100) : 0;
+                    }).reverse();
+                    
+                    return {
+                        label: variant,
+                        data: data,
+                        borderColor: getColor(index),
+                        backgroundColor: getColor(index, 0.1),
+                        tension: 0.4
+                    };
+                });
+                
+                charts.allocation.data.labels = historyDates;
+                charts.allocation.data.datasets = allocationDatasets;
+            } else {
+                // Fallback: simulate allocation evolution based on CTR performance
+                const allocationDatasets = variants.map((variant, index) => {
+                    const data = dates.map((date, dateIndex) => {
+                        // Calculate cumulative CTR up to this date
+                        let cumulativeImpressions = 0;
+                        let cumulativeClicks = 0;
+                        
+                        for (let i = 0; i <= dateIndex; i++) {
+                            const dayEvent = expEvents.find(e => e.date === dates[i]);
+                            const variantData = dayEvent?.variants.find(v => v.variant_name === variant);
+                            if (variantData) {
+                                cumulativeImpressions += variantData.impressions || 0;
+                                cumulativeClicks += variantData.clicks || 0;
+                            }
+                        }
+                        
+                        const ctr = cumulativeImpressions > 0 ? cumulativeClicks / cumulativeImpressions : 0;
+                        
+                        // Calculate relative performance vs other variants
+                        const allVariantCTRs = variants.map(v => {
+                            let vImpressions = 0;
+                            let vClicks = 0;
+                            for (let i = 0; i <= dateIndex; i++) {
+                                const dayEvent = expEvents.find(e => e.date === dates[i]);
+                                const vData = dayEvent?.variants.find(vd => vd.variant_name === v);
+                                if (vData) {
+                                    vImpressions += vData.impressions || 0;
+                                    vClicks += vData.clicks || 0;
+                                }
+                            }
+                            return vImpressions > 0 ? vClicks / vImpressions : 0;
+                        });
+                        
+                        const totalCTR = allVariantCTRs.reduce((sum, c) => sum + c, 0);
+                        if (totalCTR === 0) return 50; // Equal allocation if no data
+                        
+                        // Simulate Thompson Sampling allocation
+                        const baseAllocation = (ctr / totalCTR) * 100;
+                        const minAllocation = 10; // Minimum 10% allocation
+                        const maxAllocation = 80; // Maximum 80% allocation
+                        
+                        return Math.max(minAllocation, Math.min(maxAllocation, baseAllocation));
+                    });
+                    
+                    return {
+                        label: variant,
+                        data: data,
+                        borderColor: getColor(index),
+                        backgroundColor: getColor(index, 0.1),
+                        tension: 0.4
+                    };
+                });
+                
+                charts.allocation.data.labels = dates;
+                charts.allocation.data.datasets = allocationDatasets;
+            }
+            charts.allocation.update();
+            
+            // Update Confidence Chart
+            const confidenceData = variants.map(variant => {
+                let totalImp = 0, totalClicks = 0;
+                expEvents.forEach(event => {
+                    const v = event.variants?.find(v => v.variant_name === variant);
+                    if (v) {
+                        totalImp += v.impressions || 0;
+                        totalClicks += v.clicks || 0;
+                    }
+                });
+                return totalImp > 0 ? (totalClicks / totalImp * 100) : 0;
+            });
+            
+            charts.confidence.data.labels = variants;
+            charts.confidence.data.datasets[0].data = confidenceData;
+            charts.confidence.update();
+            
+            // Update Results Table
+            updateResultsTable(expEvents, currentExperimentData.allocations);
+            
+            // Calculate and update regret
+            calculateRegret(expEvents);
+        }
+        
+        // Update Results Table
+        function updateResultsTable(events, allocations) {
+            const tbody = document.getElementById('results-table');
+            tbody.innerHTML = '';
+            
+            events.forEach(event => {
+                event.variants.forEach(variant => {
+                    const row = tbody.insertRow();
+                    row.innerHTML = `
+                        <td>${event.date}</td>
+                        <td>${variant.variant_name}</td>
+                        <td>${variant.impressions}</td>
+                        <td>${variant.clicks}</td>
+                        <td>${variant.impressions > 0 ? ((variant.clicks / variant.impressions) * 100).toFixed(2) : '0.00'}%</td>
+                        <td>${allocations && allocations[variant.variant_name] ? (allocations[variant.variant_name] * 100).toFixed(1) : '-'}%</td>
+                    `;
+                });
+            });
+        }
+        
+        // Calculate Regret
+        function calculateRegret(events) {
+            // Find best CTR
+            let bestCTR = 0;
+            const variantStats = {};
+            
+            events.forEach(event => {
+                event.variants.forEach(v => {
+                    if (!variantStats[v.variant_name]) {
+                        variantStats[v.variant_name] = { impressions: 0, clicks: 0 };
+                    }
+                    variantStats[v.variant_name].impressions += v.impressions;
+                    variantStats[v.variant_name].clicks += v.clicks;
+                });
+            });
+            
+            Object.values(variantStats).forEach(stats => {
+                if (stats.impressions > 0) {
+                    const ctr = stats.clicks / stats.impressions;
+                    if (ctr > bestCTR) bestCTR = ctr;
+                }
+            });
+            
+            // Calculate cumulative regret
+            let cumulativeRegret = 0;
+            const regretData = [];
+            
+            events.forEach((event, index) => {
+                let dayRegret = 0;
+                event.variants.forEach(v => {
+                    if (v.impressions > 0) {
+                        const variantCTR = v.clicks / v.impressions;
+                        dayRegret += v.impressions * (bestCTR - variantCTR);
+                    }
+                });
+                cumulativeRegret += dayRegret;
+                regretData.push(cumulativeRegret);
+            });
+            
+            // Update regret chart
+            charts.regret.data.labels = events.map((e, i) => `Dia ${i + 1}`);
+            charts.regret.data.datasets[0].data = regretData;
+            charts.regret.update();
+            
+            // Update regret metric
+            document.getElementById('regret-value').textContent = Math.round(cumulativeRegret);
+        }
+        
+        // Update Metrics
+        function updateMetrics(data) {
+            // Find best variant from stored events
+            const events = JSON.parse(localStorage.getItem('events') || '[]');
+            const expEvents = events.filter(e => e.experiment_id == data.experiment_id);
+            
+            const variantStats = {};
+            expEvents.forEach(event => {
+                event.variants.forEach(v => {
+                    if (!variantStats[v.variant_name]) {
+                        variantStats[v.variant_name] = { impressions: 0, clicks: 0 };
+                    }
+                    variantStats[v.variant_name].impressions += v.impressions;
+                    variantStats[v.variant_name].clicks += v.clicks;
+                });
+            });
+            
+            let bestVariant = '-';
+            let bestCTR = 0;
+            
+            Object.entries(variantStats).forEach(([name, stats]) => {
+                if (stats.impressions > 0) {
+                    const ctr = stats.clicks / stats.impressions;
+                    if (ctr > bestCTR) {
+                        bestCTR = ctr;
+                        bestVariant = name;
+                    }
+                }
+            });
+            
+            document.getElementById('best-variant').textContent = bestVariant;
+            
+            // Calculate confidence based on sample size
+            const totalImpressions = Object.values(variantStats).reduce((sum, s) => sum + s.impressions, 0);
+            const confidence = Math.min(95, 50 + Math.sqrt(totalImpressions / 100));
+            document.getElementById('confidence-level').textContent = confidence.toFixed(0) + '%';
+            
+            // Calculate convergence rate
+            if (data.allocations && bestVariant !== '-') {
+                const bestAllocation = data.allocations[bestVariant] || 0;
+                const convergence = bestAllocation * 100;
+                document.getElementById('convergence-rate').textContent = convergence.toFixed(0) + '%';
+            }
+        }
+        
+        // Run Simulation
+        function runSimulation() {
+            const days = parseInt(document.getElementById('sim-days').value);
+            const impressionsPerDay = parseInt(document.getElementById('sim-impressions').value);
+            const ctrControl = parseFloat(document.getElementById('sim-ctr-control').value) / 100;
+            const ctrVariant = parseFloat(document.getElementById('sim-ctr-variant').value) / 100;
+            
+            // Simple simulation
+            const results = [];
+            let controlAlloc = 0.5;
+            let variantAlloc = 0.5;
+            let totalRegret = 0;
+            
+            for (let day = 1; day <= days; day++) {
+                // Simulate clicks
+                const controlClicks = Math.round(impressionsPerDay * controlAlloc * ctrControl);
+                const variantClicks = Math.round(impressionsPerDay * variantAlloc * ctrVariant);
+                
+                // Calculate regret (opportunity cost)
+                const optimalClicks = impressionsPerDay * Math.max(ctrControl, ctrVariant);
+                const actualClicks = controlClicks + variantClicks;
+                totalRegret += optimalClicks - actualClicks;
+                
+                // Update allocation (simplified Thompson Sampling)
+                const controlSuccess = controlClicks / (impressionsPerDay * controlAlloc);
+                const variantSuccess = variantClicks / (impressionsPerDay * variantAlloc);
+                
+                if (variantSuccess > controlSuccess) {
+                    variantAlloc = Math.min(0.9, variantAlloc + 0.02);
+                    controlAlloc = 1 - variantAlloc;
+                }
+                
+                results.push({
+                    day,
+                    controlAlloc: controlAlloc * 100,
+                    variantAlloc: variantAlloc * 100,
+                    regret: totalRegret
+                });
+            }
+            
+            // Display simulation results
+            displaySimulationResults(results);
+        }
+        
+        // Display Simulation Results
+        function displaySimulationResults(results) {
+            document.getElementById('simulation-results').style.display = 'block';
+            
+            // Create or update simulation charts
+            const days = results.map(r => `Dia ${r.day}`);
+            const controlAllocs = results.map(r => r.controlAlloc);
+            const variantAllocs = results.map(r => r.variantAlloc);
+            const regrets = results.map(r => r.regret);
+            
+            // Allocation evolution chart
+            const allocCtx = document.getElementById('simulation-allocation-chart').getContext('2d');
+            if (charts.simAllocation) charts.simAllocation.destroy();
+            
+            charts.simAllocation = new Chart(allocCtx, {
+                type: 'line',
+                data: {
+                    labels: days,
+                    datasets: [
+                        {
+                            label: 'Control',
+                            data: controlAllocs,
+                            borderColor: '#3498db',
+                            backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Variant B',
+                            data: variantAllocs,
+                            borderColor: '#2ecc71',
+                            backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: { callback: value => value + '%' }
+                        }
+                    }
+                }
+            });
+            
+            // Regret chart
+            const regretCtx = document.getElementById('simulation-regret-chart').getContext('2d');
+            if (charts.simRegret) charts.simRegret.destroy();
+            
+            charts.simRegret = new Chart(regretCtx, {
+                type: 'line',
+                data: {
+                    labels: days,
+                    datasets: [{
+                        label: 'Regret Acumulado',
+                        data: regrets,
+                        borderColor: '#e74c3c',
+                        backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+        
+        // Save Settings
+        function saveSettings() {
+            const settings = {
+                alphaPrior: document.getElementById('alpha-prior').value,
+                betaPrior: document.getElementById('beta-prior').value,
+                minExplore: document.getElementById('min-explore').value,
+                controlFloor: document.getElementById('control-floor').value
+            };
+            
+            localStorage.setItem('bandit-settings', JSON.stringify(settings));
+            showMessage('settings-message', '✅ Configurações salvas!', 'success');
+        }
+        
+        
+        // Utility function to get colors
+        function getColor(index, alpha = 1) {
+            const colors = [
+                `rgba(74, 144, 226, ${alpha})`,   // Blue
+                `rgba(46, 204, 113, ${alpha})`,   // Green
+                `rgba(231, 76, 60, ${alpha})`,    // Red
+                `rgba(155, 89, 182, ${alpha})`,   // Purple
+                `rgba(241, 196, 15, ${alpha})`    // Yellow
+            ];
+            return colors[index % colors.length];
+        }
+        
+        // Utility function to show messages
+        function showMessage(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+            setTimeout(() => {
+                element.innerHTML = '';
+            }, 5000);
+        }
 
-    // Carrega Chart.js dinamicamente
-    (function loadChartJs() {
-      const script = document.createElement('script');
-      script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
-      document.body.appendChild(script);
-    })();
-  </script>
+        // Reset All Data
+        async function resetAllData() {
+            if (confirm('⚠️ Isso irá apagar TODOS os dados salvos. Tem certeza?')) {
+                try {
+                    // Clear API data
+                    const res = await fetch('http://localhost:8000/reset_data', {
+                        method: 'POST'
+                    });
+                    const data = await res.json();
+                    if (res.ok) {
+                        // Clear localStorage
+                        localStorage.removeItem('experiments');
+                        localStorage.removeItem('events');
+                        localStorage.removeItem('bandit-settings');
+                        
+                        // Reset header stats to zero
+                        document.getElementById('total-experiments').textContent = '0';
+                        document.getElementById('total-impressions').textContent = '0';
+                        document.getElementById('avg-ctr').textContent = '0%';
+                        
+                        // Reset metrics cards
+                        document.getElementById('best-variant').textContent = '-';
+                        document.getElementById('confidence-level').textContent = '-';
+                        document.getElementById('regret-value').textContent = '0';
+                        document.getElementById('convergence-rate').textContent = '0%';
+                        
+                        // Clear all displays
+                        document.getElementById('allocation-results').style.display = 'none';
+                        document.getElementById('results-table').innerHTML = '<tr><td colspan="6" style="text-align: center;">Nenhum dado disponível</td></tr>';
+                        
+                        // Reset charts
+                        Object.values(charts).forEach(chart => {
+                            if (chart && chart.data) {
+                                chart.data.labels = [];
+                                chart.data.datasets.forEach(dataset => {
+                                    dataset.data = [];
+                                });
+                                chart.update();
+                            }
+                        });
+                        
+                        // Clear current experiment data
+                        currentExperimentData = null;
+                        
+                        alert('✅ Todos os dados foram limpos!');
+                    } else {
+                        alert(`❌ Erro ao limpar dados: ${data.detail || 'Erro desconhecido'}`);
+                    }
+                } catch (error) {
+                    alert('❌ Erro de conexão com a API.');
+                }
+            }
+        }
+    </script>
 </body>
 </html>

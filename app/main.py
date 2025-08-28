@@ -247,6 +247,9 @@ async def get_allocation(
 
 from typing import Optional
 
+from typing import Optional
+from sqlalchemy import text
+
 @app.get("/experiments/{experiment_id}/history")
 async def get_allocation_history(
     experiment_id: int,
@@ -281,6 +284,17 @@ async def get_allocation_history(
             for alloc in allocations
         ]
     }
+
+@app.post("/reset_data")
+async def reset_data(db: Session = Depends(get_db)):
+    """Resets all data in the database"""
+    try:
+        db.execute(text("TRUNCATE TABLE daily_metrics, allocations, experiments RESTART IDENTITY CASCADE;"))
+        db.commit()
+        return {"message": "Dados limpos com sucesso!"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Erro ao limpar dados: {str(e)}")
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
