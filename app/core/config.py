@@ -19,6 +19,10 @@ class Settings:
     )
     
     def __init__(self):
+        # Convert postgres:// to postgresql:// if needed (Render compatibility)
+        if self.DATABASE_URL.startswith('postgres://'):
+            self.DATABASE_URL = self.DATABASE_URL.replace('postgres://', 'postgresql://', 1)
+        
         # Log database URL for debugging (hide password)
         db_url_safe = self.DATABASE_URL.replace(self.DATABASE_URL.split('@')[0].split('://')[-1], '***') if '@' in self.DATABASE_URL else self.DATABASE_URL
         logger.info(f"Database URL configured: {db_url_safe}")
