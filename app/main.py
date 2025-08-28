@@ -5,10 +5,12 @@ Main FastAPI application with SQL integration
 
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import func  # Adicione esta linha
 from typing import List
 import uvicorn
+import os
 
 from app.core.database import SessionLocal, engine
 from .models import Base, Allocation, Experiment
@@ -55,6 +57,40 @@ def get_db():
 async def root():
     """API health check"""
     return {"message": "Multi-Armed Bandit Optimization API", "version": "1.0.0"}
+
+@app.get("/dashboard", response_class=HTMLResponse)
+async def get_dashboard():
+    """Serve the interactive dashboard"""
+    try:
+        # Try to read from the root directory first
+        dashboard_path = "bandit-dashboard.html"
+        if os.path.exists(dashboard_path):
+            with open(dashboard_path, "r", encoding="utf-8") as f:
+                content = f.read()
+        else:
+            # Fallback to app directory
+            dashboard_path = os.path.join("app", "dashboard", "index.html")
+            if os.path.exists(dashboard_path):
+                with open(dashboard_path, "r", encoding="utf-8") as f:
+                    content = f.read()
+            else:
+                # Return a simple message if dashboard not found
+                content = """
+                <!DOCTYPE html>
+                <html>
+                <head><title>Dashboard</title></head>
+                <body>
+                    <h1>Multi-Armed Bandit Dashboard</h1>
+                    <p>Dashboard em desenvolvimento. Acesse a <a href="/docs">documentação da API</a>.</p>
+                </body>
+                </html>
+                """
+        
+        # Replace localhost URLs with current host for production
+        content = content.replace("http://localhost:8000", "")
+        return HTMLResponse(content=content)
+    except Exception as e:
+        return HTMLResponse(content=f"<h1>Error loading dashboard: {str(e)}</h1>")
 
 @app.post("/experiments", response_model=ExperimentResponse)
 async def create_new_experiment(
