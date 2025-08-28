@@ -187,9 +187,15 @@ async def get_dashboard():
         
         # Replace localhost URLs with current host for production
         content = content.replace("http://localhost:8000", "")
+        content = content.replace("window.location.origin", f"'{os.getenv('RENDER_EXTERNAL_URL', 'http://localhost:8080')}'")
         return HTMLResponse(content=content)
     except Exception as e:
         return HTMLResponse(content=f"<h1>Error loading dashboard: {str(e)}</h1>")
+
+@app.get("/bandit-dashboard.html", response_class=HTMLResponse)
+async def serve_dashboard_file():
+    """Alternative route to serve dashboard - for compatibility"""
+    return await get_dashboard()
 
 @app.post("/experiments/", response_model=ExperimentResponse)
 @app.post("/experiments", response_model=ExperimentResponse)
