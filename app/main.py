@@ -20,6 +20,24 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Debug environment variables
+logger.info("=== ENVIRONMENT DEBUG ===")
+logger.info(f"DATABASE_URL exists: {'DATABASE_URL' in os.environ}")
+if 'DATABASE_URL' in os.environ:
+    db_url = os.environ['DATABASE_URL']
+    # Hide password for logging
+    if '@' in db_url:
+        parts = db_url.split('@')
+        safe_url = parts[0].split('://')[0] + '://***@' + '@'.join(parts[1:])
+    else:
+        safe_url = db_url
+    logger.info(f"DATABASE_URL value: {safe_url}")
+else:
+    logger.warning("DATABASE_URL not found in environment variables")
+
+logger.info(f"All env vars: {list(os.environ.keys())}")
+logger.info("=== END ENVIRONMENT DEBUG ===")
+
 from app.core.database import SessionLocal, engine
 from .models import Base, Allocation, Experiment
 from .schemas import (

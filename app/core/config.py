@@ -3,6 +3,11 @@ Configuration settings for the Multi-Armed Bandit API
 """
 
 import os
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class Settings:
     """Application configuration"""
@@ -12,6 +17,12 @@ class Settings:
         "DATABASE_URL", 
         "postgresql://bandit_user:bandit_pass@localhost:5432/bandit_db"
     )
+    
+    def __init__(self):
+        # Log database URL for debugging (hide password)
+        db_url_safe = self.DATABASE_URL.replace(self.DATABASE_URL.split('@')[0].split('://')[-1], '***') if '@' in self.DATABASE_URL else self.DATABASE_URL
+        logger.info(f"Database URL configured: {db_url_safe}")
+        logger.info(f"Environment: {self.ENVIRONMENT}")
     
     # Application
     DEBUG: bool = os.getenv("DEBUG", "False").lower() == "true"
