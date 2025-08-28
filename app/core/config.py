@@ -14,7 +14,8 @@ class Settings:
     )
     
     # Application
-    DEBUG: bool = os.getenv("DEBUG", "True").lower() == "true"
+    DEBUG: bool = os.getenv("DEBUG", "False").lower() == "true"
+    ENVIRONMENT: str = os.getenv("ENVIRONMENT", "production")
     APP_NAME: str = "Multi-Armed Bandit API"
     VERSION: str = "1.0.0"
     

@@ -7,10 +7,18 @@ from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
-from sqlalchemy import func  # Adicione esta linha
+from sqlalchemy import func, text
 from typing import List
 import uvicorn
 import os
+import logging
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger(__name__)
 
 from app.core.database import SessionLocal, engine
 from .models import Base, Allocation, Experiment
@@ -57,6 +65,24 @@ def get_db():
 async def root():
     """API health check"""
     return {"message": "Multi-Armed Bandit Optimization API", "version": "1.0.0"}
+
+@app.get("/health")
+async def health_check(db: Session = Depends(get_db)):
+    """Comprehensive health check for Render"""
+    try:
+        # Test database connection
+        db.execute(text("SELECT 1"))
+        db_status = "healthy"
+    except Exception as e:
+        logger.error(f"Database health check failed: {e}")
+        db_status = "unhealthy"
+    
+    return {
+        "status": "healthy" if db_status == "healthy" else "unhealthy",
+        "database": db_status,
+        "version": "1.0.0",
+        "environment": settings.ENVIRONMENT
+    }
 
 @app.get("/dashboard", response_class=HTMLResponse)
 async def get_dashboard():

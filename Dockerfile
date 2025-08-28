@@ -11,6 +11,8 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app/ ./app/
+COPY bandit-dashboard.html ./
+COPY *.html ./
 
 RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
 USER appuser

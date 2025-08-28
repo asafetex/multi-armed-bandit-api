@@ -10,7 +10,7 @@ services:
           name: bandit-postgres
           property: connectionString
       - key: PYTHON_VERSION
-        value: 3.11.0
+        value: 3.11
 
 databases:
   - name: bandit-postgres
