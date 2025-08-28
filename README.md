@@ -294,7 +294,7 @@ Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalh
 ## 👥 Autor
 
 **Seu Nome**
-- GitHub: [@seu-usuario](https://github.com/asafetex)
+- GitHub: [@asafetex](https://github.com/asafetex)
 - LinkedIn: [Seu Perfil](https://www.linkedin.com/in/asafeteixeira/)
 - Email: asafetex@gmail.com
 
