@@ -294,6 +294,7 @@
                     </div>
                     <button type="submit" class="btn btn-primary">Calcular Alocação</button>
                 </form>
+                <div id="allocation-message"></div>
                 
                 <div id="allocation-results" style="margin-top: 2rem; display: none;">
                     <div style="margin-bottom: 2rem;">
@@ -477,7 +478,7 @@
     </div>
     
     <script>
-        const API_URL = window.location.origin;
+        const API_URL = 'http://localhost:8080';
         let charts = {};
         let allExperiments = [];
         let currentExperimentData = null;
@@ -737,18 +738,48 @@
         async function getAllocation() {
             const expId = document.getElementById('allocation-exp-id').value;
             const windowDays = document.getElementById('window-days').value;
+            const messageDiv = document.getElementById('allocation-message');
+            
+            // Limpar mensagem anterior
+            messageDiv.innerHTML = '';
+            
+            // Mostrar loading
+            messageDiv.innerHTML = '<div class="alert alert-warning">⏳ Calculando alocação...</div>';
             
             try {
-                const response = await fetch(API_URL + '/allocation?experiment_id=' + expId + '&window_days=' + windowDays);
+                const response = await fetch(API_URL + '/allocation/?experiment_id=' + expId + '&window_days=' + windowDays);
                 const result = await response.json();
                 
                 if (response.ok) {
                     displayAllocation(result);
+                    // Limpar mensagem de loading após sucesso
+                    messageDiv.innerHTML = '';
                 } else {
-                    alert('❌ Erro: ' + result.detail);
+                    // Tratar erros específicos
+                    let errorMessage = '❌ Erro: ';
+                    if (result.error === 'Insufficient variants') {
+                        errorMessage += 'É necessário pelo menos 2 variantes com dados para calcular alocação.';
+                    } else if (result.error === 'No data in time window') {
+                        errorMessage += 'Nenhum dado encontrado para os últimos ' + windowDays + ' dias. Tente aumentar a janela de tempo ou enviar dados mais recentes.';
+                    } else {
+                        errorMessage += result.detail || result.error || 'Erro ao calcular alocação';
+                    }
+                    messageDiv.innerHTML = '<div class="alert alert-danger">' + errorMessage + '</div>';
+                    // Esconder resultados anteriores se houver erro
+                    document.getElementById('allocation-results').style.display = 'none';
+                    
+                    setTimeout(() => {
+                        messageDiv.innerHTML = '';
+                    }, 5000);
                 }
             } catch (error) {
-                alert('❌ Erro de conexão: ' + error.message);
+                console.error('Erro ao calcular alocação:', error);
+                messageDiv.innerHTML = '<div class="alert alert-danger">❌ Erro de conexão: ' + error.message + '</div>';
+                document.getElementById('allocation-results').style.display = 'none';
+                
+                setTimeout(() => {
+                    messageDiv.innerHTML = '';
+                }, 5000);
             }
         }
         
@@ -765,7 +796,12 @@
                 variants = data.variants;
             } else {
                 console.error('No variants found in response:', data);
-                alert('❌ Erro: Dados de variantes não encontrados na resposta. Verifique se o experimento possui dados.');
+                const messageDiv = document.getElementById('allocation-message');
+                messageDiv.innerHTML = '<div class="alert alert-danger">❌ Erro: Dados de variantes não encontrados na resposta. Verifique se o experimento possui dados suficientes.</div>';
+                document.getElementById('allocation-results').style.display = 'none';
+                setTimeout(() => {
+                    messageDiv.innerHTML = '';
+                }, 5000);
                 return;
             }
             
