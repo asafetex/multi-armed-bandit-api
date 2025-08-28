@@ -2,7 +2,7 @@ services:
   - type: web
     name: multi-armed-bandit-api
     env: python
-    buildCommand: pip install -r requirements.txt
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: DATABASE_URL
@@ -10,9 +10,14 @@ services:
           name: bandit-postgres
           property: connectionString
       - key: PYTHON_VERSION
-        value: 3.11
+        value: "3.11"
+      - key: DEBUG
+        value: "False"
+      - key: ENVIRONMENT
+        value: "production"
 
 databases:
   - name: bandit-postgres
     databaseName: bandit_db
     user: bandit_user
+    plan: free

@@ -12,9 +12,13 @@ engine = create_engine(
     settings.DATABASE_URL,
     pool_pre_ping=True,
     pool_recycle=300,
-    pool_size=10,
-    max_overflow=20,
-    echo=settings.DEBUG
+    pool_size=5,
+    max_overflow=10,
+    echo=settings.DEBUG,
+    connect_args={
+        "connect_timeout": 60,
+        "application_name": "multi-armed-bandit-api"
+    }
 )
 
 # Create session factory

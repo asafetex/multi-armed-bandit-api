@@ -34,8 +34,26 @@ from .crud import (
 from app.services.bandit import ThompsonSampling
 from app.core.config import settings
 
-# Create database tables
-Base.metadata.create_all(bind=engine)
+# Create database tables with retry logic
+def create_tables():
+    """Create database tables with retry logic"""
+    import time
+    max_retries = 5
+    for attempt in range(max_retries):
+        try:
+            Base.metadata.create_all(bind=engine)
+            logger.info("Database tables created successfully")
+            break
+        except Exception as e:
+            if attempt < max_retries - 1:
+                logger.warning(f"Failed to create tables (attempt {attempt + 1}/{max_retries}): {e}")
+                time.sleep(5)
+            else:
+                logger.error(f"Failed to create tables after {max_retries} attempts: {e}")
+                # Don't fail the app startup, let it try to connect later
+                pass
+
+create_tables()
 
 
 app = FastAPI(
