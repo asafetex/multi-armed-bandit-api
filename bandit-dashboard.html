@@ -550,7 +550,18 @@
             const ctrDisplay = document.getElementById('ctr-allocation-display');
             const conversionDisplay = document.getElementById('conversion-allocation-display');
             
-            const variants = data.summary ? data.summary.variants : data.variants;
+            // Validação robusta para obter variants
+            let variants = [];
+            if (data.summary && data.summary.variants && Array.isArray(data.summary.variants)) {
+                variants = data.summary.variants;
+            } else if (data.variants && Array.isArray(data.variants)) {
+                variants = data.variants;
+            } else {
+                console.error('No variants found in response:', data);
+                alert('❌ Erro: Dados de variantes não encontrados na resposta. Verifique se o experimento possui dados.');
+                return;
+            }
+            
             const allocations = data.allocations || {};
             
             // CTR-based allocation display
