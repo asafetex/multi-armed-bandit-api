@@ -128,21 +128,37 @@ async def database_test():
     try:
         from app.core.database import engine
         
+        # Detect database type
+        db_url = str(engine.url)
+        is_sqlite = db_url.startswith('sqlite')
+        is_postgresql = 'postgresql' in db_url or 'postgres' in db_url
+        
         # Test raw connection
         with engine.connect() as conn:
+            # Get database version
             result = conn.execute(text("SELECT version()"))
             db_version = result.fetchone()[0]
             
-            # Test table existence
-            tables_result = conn.execute(text("""
-                SELECT table_name 
-                FROM information_schema.tables 
-                WHERE table_schema = 'public'
-            """))
+            # Test table existence - different queries for different databases
+            if is_sqlite:
+                # SQLite query
+                tables_result = conn.execute(text("""
+                    SELECT name FROM sqlite_master 
+                    WHERE type='table' AND name NOT LIKE 'sqlite_%'
+                """))
+            else:
+                # PostgreSQL query (and most other databases)
+                tables_result = conn.execute(text("""
+                    SELECT table_name 
+                    FROM information_schema.tables 
+                    WHERE table_schema = 'public'
+                """))
+            
             tables = [row[0] for row in tables_result.fetchall()]
             
         return {
             "status": "success",
+            "database_type": "sqlite" if is_sqlite else "postgresql" if is_postgresql else "other",
             "database_version": db_version,
             "tables": tables,
             "database_url_configured": "DATABASE_URL" in os.environ,
@@ -611,21 +627,40 @@ async def upload_data(
 async def reset_data(db: Session = Depends(get_db)):
     """Resets all data in the database"""
     try:
-        # Different commands for SQLite vs PostgreSQL
-        if settings.DATABASE_URL.startswith('sqlite://'):
+        # Get actual database URL from engine
+        from app.core.database import engine
+        db_url = str(engine.url)
+        
+        # Detect database type from actual connection
+        is_sqlite = db_url.startswith('sqlite')
+        is_postgresql = 'postgresql' in db_url or 'postgres' in db_url
+        
+        logger.info(f"Database type detection: URL={db_url[:20]}..., SQLite={is_sqlite}, PostgreSQL={is_postgresql}")
+        
+        if is_sqlite:
             # SQLite doesn't support TRUNCATE, use DELETE
             db.execute(text("DELETE FROM daily_metrics;"))
             db.execute(text("DELETE FROM allocations;"))
             db.execute(text("DELETE FROM experiments;"))
+            # Reset auto-increment counters for SQLite
             db.execute(text("DELETE FROM sqlite_sequence WHERE name IN ('daily_metrics', 'allocations', 'experiments');"))
+        elif is_postgresql:
+            # PostgreSQL - use TRUNCATE with CASCADE to handle foreign key constraints
+            db.execute(text("TRUNCATE TABLE daily_metrics RESTART IDENTITY CASCADE;"))
+            db.execute(text("TRUNCATE TABLE allocations RESTART IDENTITY CASCADE;"))
+            db.execute(text("TRUNCATE TABLE experiments RESTART IDENTITY CASCADE;"))
         else:
-            # PostgreSQL
-            db.execute(text("TRUNCATE TABLE daily_metrics, allocations, experiments RESTART IDENTITY CASCADE;"))
+            # Fallback for other databases - use DELETE
+            db.execute(text("DELETE FROM daily_metrics;"))
+            db.execute(text("DELETE FROM allocations;"))
+            db.execute(text("DELETE FROM experiments;"))
         
         db.commit()
-        return {"message": "Dados limpos com sucesso!"}
+        logger.info("Database reset completed successfully")
+        return {"message": "Dados limpos com sucesso!", "database_type": "sqlite" if is_sqlite else "postgresql" if is_postgresql else "other"}
     except Exception as e:
         db.rollback()
+        logger.error(f"Database reset failed: {e}")
         raise HTTPException(status_code=500, detail=f"Erro ao limpar dados: {str(e)}")
 
 if __name__ == "__main__":
