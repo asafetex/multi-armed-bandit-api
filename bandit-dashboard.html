@@ -676,6 +676,10 @@
         // API Configuration
         const API_URL = window.location.origin;
         
+        // Debug API URL
+        console.log('API_URL:', API_URL);
+        console.log('Current location:', window.location);
+        
         // Global variables
         let charts = {};
         let allExperiments = [];
@@ -895,14 +899,25 @@
             const name = document.getElementById('exp-name').value;
             const description = document.getElementById('exp-description').value;
             
+            console.log('Tentando criar experimento:', { name, description });
+            console.log('URL da requisição:', `${API_URL}/experiments`);
+            
             try {
                 const response = await fetch(`${API_URL}/experiments`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
                     body: JSON.stringify({ name, description })
                 });
                 
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                
                 const data = await response.json();
+                console.log('Response data:', data);
+                
                 if (response.ok) {
                     // Store experiment locally
                     const experiments = JSON.parse(localStorage.getItem('experiments') || '[]');
@@ -916,7 +931,8 @@
                     showMessage('create-message', `❌ Erro: ${data.detail || 'Falha ao criar experimento'}`, 'danger');
                 }
             } catch (error) {
-                showMessage('create-message', '❌ Erro de conexão', 'danger');
+                console.error('Erro na requisição:', error);
+                showMessage('create-message', `❌ Erro de conexão: ${error.message}`, 'danger');
             }
         });
         
