@@ -292,6 +292,14 @@
             border-left: 4px solid var(--primary);
         }
         
+        .allocation-item.conversion {
+            border-left-color: #e67e22;
+        }
+        
+        .allocation-item.conversion .allocation-value {
+            color: #e67e22;
+        }
+        
         .allocation-name {
             font-weight: 600;
             color: var(--dark);
@@ -553,10 +561,10 @@
                     </form>
                 </div>
                 
-                <!-- Submit Events -->
+                <!-- Submit Events Manual -->
                 <div class="card">
                     <div class="card-header">
-                        <h2 class="card-title">Enviar Dados</h2>
+                        <h2 class="card-title">Enviar Dados Manualmente</h2>
                     </div>
                     <form id="submit-events-form">
                         <div class="form-row">
@@ -577,37 +585,39 @@
                         </div>
                         
                         <div class="btn-group">
-                            <button type="submit" class="btn btn-success">Enviar Dados</button>
+                            <button type="submit" class="btn btn-success">Enviar Dados Manuais</button>
                             <button type="button" class="btn btn-primary" onclick="loadSampleData()">Carregar Exemplo</button>
                             <button type="button" class="btn btn-warning" onclick="downloadTemplate()">📥 Modelo de Dados</button>
-                        </div>
-                        
-                        <!-- Upload Section -->
-                        <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 2px solid var(--light);">
-                            <h4 style="margin-bottom: 1rem;">📤 Upload de Dados em Lote</h4>
-                            <form id="upload-form" enctype="multipart/form-data">
-                                <div class="form-group">
-                                    <label class="form-label">Selecionar Arquivo CSV</label>
-                                    <input type="file" class="form-control" id="csv-file" accept=".csv" required>
-                                    <small style="color: #666; margin-top: 0.5rem; display: block;">
-                                        Apenas arquivos .csv são aceitos. Estrutura: experiment_id, date, variant_name, impressions, clicks, conversions
-                                    </small>
-                                </div>
-                                <button type="submit" class="btn btn-success">
-                                    🚀 Enviar Dados
-                                </button>
-                            </form>
-                            <div id="upload-message"></div>
-                            
-                            <!-- Upload Results -->
-                            <div id="upload-results" style="display: none; margin-top: 1rem;">
-                                <div id="upload-summary"></div>
-                                <div id="upload-errors" style="margin-top: 1rem;"></div>
-                            </div>
                         </div>
                         <div id="events-message"></div>
                     </form>
                 </div>
+            </div>
+            
+            <!-- Upload CSV Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">📤 Upload de Dados CSV</h2>
+                </div>
+                <form id="csv-upload-form" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label class="form-label">Selecionar Arquivo CSV</label>
+                        <input type="file" class="form-control" id="csv-upload-file" accept=".csv" required>
+                        <small style="color: #666; margin-top: 0.5rem; display: block;">
+                            Apenas arquivos .csv são aceitos. Estrutura: experiment_id, date, variant_name, impressions, clicks, conversions
+                        </small>
+                    </div>
+                    <button type="submit" class="btn btn-success">
+                        🚀 Enviar Dados CSV
+                    </button>
+                    <div id="csv-upload-message"></div>
+                    
+                    <!-- Upload Results -->
+                    <div id="csv-upload-results" style="display: none; margin-top: 1rem;">
+                        <div id="csv-upload-summary"></div>
+                        <div id="csv-upload-errors" style="margin-top: 1rem;"></div>
+                    </div>
+                </form>
             </div>
             
             <!-- Get Allocation -->
@@ -630,8 +640,17 @@
                 </form>
                 
                 <div id="allocation-results" style="margin-top: 2rem; display: none;">
-                    <h3>Alocação Recomendada</h3>
-                    <div id="allocation-display" class="allocation-grid"></div>
+                    <!-- CTR-based Allocation -->
+                    <div style="margin-bottom: 2rem;">
+                        <h3 style="color: var(--primary); margin-bottom: 1rem;">📈 Alocação Baseada em CTR</h3>
+                        <div id="ctr-allocation-display" class="allocation-grid"></div>
+                    </div>
+                    
+                    <!-- Conversion-based Allocation -->
+                    <div>
+                        <h3 style="color: #e67e22; margin-bottom: 1rem;">🎯 Alocação Baseada em CTR + Conversão</h3>
+                        <div id="conversion-allocation-display" class="allocation-grid"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -797,6 +816,7 @@
             initializeLanguage();
             initializeCharts();
             loadAllExperiments();
+            setupEventListeners();
             
             // Add initial variants if empty
             if (document.getElementById('variants-list').children.length === 0) {
@@ -804,6 +824,247 @@
                 addVariant('variant_a', 1000, 95, 86);
             }
         });
+        
+        // Setup Event Listeners
+        function setupEventListeners() {
+            // Create Experiment Form
+            document.getElementById('create-experiment-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await createExperiment();
+            });
+            
+            // Submit Events Form (Manual)
+            document.getElementById('submit-events-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await submitEvents();
+            });
+            
+            // CSV Upload Form
+            document.getElementById('csv-upload-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await uploadCSV();
+            });
+            
+            // Get Allocation Form
+            document.getElementById('get-allocation-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await getAllocation();
+            });
+        }
+        
+        // API Functions
+        async function createExperiment() {
+            const name = document.getElementById('exp-name').value;
+            const description = document.getElementById('exp-description').value;
+            
+            try {
+                const response = await fetch(`${API_URL}/experiments`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, description })
+                });
+                
+                const result = await response.json();
+                const messageDiv = document.getElementById('create-message');
+                
+                if (response.ok) {
+                    messageDiv.innerHTML = `<div class="alert alert-success">✅ Experimento "${name}" criado com ID: ${result.id}</div>`;
+                    document.getElementById('create-experiment-form').reset();
+                    loadAllExperiments();
+                } else {
+                    messageDiv.innerHTML = `<div class="alert alert-danger">❌ Erro: ${result.detail}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('create-message').innerHTML = `<div class="alert alert-danger">❌ Erro de conexão: ${error.message}</div>`;
+            }
+        }
+        
+        async function submitEvents() {
+            const expId = document.getElementById('event-exp-id').value;
+            const date = document.getElementById('event-date').value;
+            const variants = [];
+            
+            document.querySelectorAll('#variants-list .variant-row').forEach(row => {
+                const inputs = row.querySelectorAll('input');
+                variants.push({
+                    variant_name: inputs[0].value,
+                    impressions: parseInt(inputs[1].value),
+                    clicks: parseInt(inputs[2].value),
+                    conversions: parseInt(inputs[3].value)
+                });
+            });
+            
+            if (variants.length === 0) {
+                document.getElementById('events-message').innerHTML = `<div class="alert alert-warning">⚠️ Adicione pelo menos uma variante</div>`;
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/experiments/${expId}/events`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        date: date,
+                        variants: variants
+                    })
+                });
+                
+                const result = await response.json();
+                const messageDiv = document.getElementById('events-message');
+                
+                if (response.ok) {
+                    messageDiv.innerHTML = `<div class="alert alert-success">✅ Dados enviados com sucesso!</div>`;
+                    // Reset form
+                    document.getElementById('variants-list').innerHTML = '';
+                    addVariant('control', 1000, 70, 63);
+                    addVariant('variant_a', 1000, 95, 86);
+                } else {
+                    messageDiv.innerHTML = `<div class="alert alert-danger">❌ Erro: ${result.detail}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('events-message').innerHTML = `<div class="alert alert-danger">❌ Erro de conexão: ${error.message}</div>`;
+            }
+        }
+        
+        async function uploadCSV() {
+            const fileInput = document.getElementById('csv-upload-file');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                document.getElementById('csv-upload-message').innerHTML = `<div class="alert alert-warning">⚠️ Selecione um arquivo CSV</div>`;
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            try {
+                const response = await fetch(`${API_URL}/experiments/upload-csv`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                const messageDiv = document.getElementById('csv-upload-message');
+                
+                if (response.ok) {
+                    messageDiv.innerHTML = `<div class="alert alert-success">✅ Arquivo enviado com sucesso! ${result.processed} registros processados.</div>`;
+                    fileInput.value = '';
+                    loadAllExperiments();
+                } else {
+                    messageDiv.innerHTML = `<div class="alert alert-danger">❌ Erro: ${result.detail}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('csv-upload-message').innerHTML = `<div class="alert alert-danger">❌ Erro de conexão: ${error.message}</div>`;
+            }
+        }
+        
+        async function getAllocation() {
+            const expId = document.getElementById('allocation-exp-id').value;
+            const windowDays = document.getElementById('window-days').value;
+            
+            try {
+                const response = await fetch(`${API_URL}/experiments/${expId}/allocation?window_days=${windowDays}`);
+                const result = await response.json();
+                
+                if (response.ok) {
+                    displayAllocation(result);
+                } else {
+                    alert(`❌ Erro: ${result.detail}`);
+                }
+            } catch (error) {
+                alert(`❌ Erro de conexão: ${error.message}`);
+            }
+        }
+        
+        function displayAllocation(data) {
+            const resultsDiv = document.getElementById('allocation-results');
+            const ctrDisplay = document.getElementById('ctr-allocation-display');
+            const conversionDisplay = document.getElementById('conversion-allocation-display');
+            
+            // CTR-based allocation
+            let ctrHtml = '';
+            data.variants.forEach(variant => {
+                const allocation = (variant.allocation_percentage * 100).toFixed(1);
+                const ctr = (variant.ctr * 100).toFixed(2);
+                ctrHtml += `
+                    <div class="allocation-item">
+                        <div class="allocation-name">${variant.variant_name}</div>
+                        <div class="allocation-value">${allocation}%</div>
+                        <div class="allocation-stats">
+                            CTR: ${ctr}%<br>
+                            Impressões: ${variant.total_impressions}<br>
+                            Cliques: ${variant.total_clicks}
+                        </div>
+                    </div>
+                `;
+            });
+            ctrDisplay.innerHTML = ctrHtml;
+            
+            // Conversion-based allocation (CTR + Conversion)
+            let conversionHtml = '';
+            data.variants.forEach(variant => {
+                // Calculate combined metric (CTR * Conversion Rate)
+                const conversionRate = variant.total_conversions / variant.total_clicks || 0;
+                const combinedScore = variant.ctr * conversionRate;
+                const totalCombined = data.variants.reduce((sum, v) => {
+                    const vConvRate = v.total_conversions / v.total_clicks || 0;
+                    return sum + (v.ctr * vConvRate);
+                }, 0);
+                const conversionAllocation = totalCombined > 0 ? (combinedScore / totalCombined * 100) : 50;
+                
+                const convRatePercent = (conversionRate * 100).toFixed(2);
+                conversionHtml += `
+                    <div class="allocation-item conversion">
+                        <div class="allocation-name">${variant.variant_name}</div>
+                        <div class="allocation-value">${conversionAllocation.toFixed(1)}%</div>
+                        <div class="allocation-stats">
+                            Taxa Conversão: ${convRatePercent}%<br>
+                            Conversões: ${variant.total_conversions}<br>
+                            Score Combinado: ${(combinedScore * 100).toFixed(3)}
+                        </div>
+                    </div>
+                `;
+            });
+            conversionDisplay.innerHTML = conversionHtml;
+            
+            resultsDiv.style.display = 'block';
+            updateHeaderStats(data);
+        }
+        
+        function updateHeaderStats(data) {
+            const totalImpressions = data.variants.reduce((sum, v) => sum + v.total_impressions, 0);
+            const totalClicks = data.variants.reduce((sum, v) => sum + v.total_clicks, 0);
+            const totalConversions = data.variants.reduce((sum, v) => sum + v.total_conversions, 0);
+            const avgCTR = totalImpressions > 0 ? (totalClicks / totalImpressions * 100) : 0;
+            const avgConversion = totalClicks > 0 ? (totalConversions / totalClicks * 100) : 0;
+            
+            document.getElementById('total-impressions').textContent = totalImpressions.toLocaleString();
+            document.getElementById('avg-ctr').textContent = avgCTR.toFixed(2) + '%';
+            document.getElementById('avg-conversion').textContent = avgConversion.toFixed(2) + '%';
+            
+            // Update best variant
+            const bestVariant = data.variants.reduce((best, current) => 
+                current.ctr > best.ctr ? current : best
+            );
+            document.getElementById('best-variant').textContent = bestVariant.variant_name;
+            
+            // Calculate confidence (simplified)
+            const confidence = Math.min(95, Math.max(50, totalImpressions / 1000 * 10));
+            document.getElementById('confidence-level').textContent = confidence.toFixed(0) + '%';
+        }
+        
+        async function loadAllExperiments() {
+            try {
+                const response = await fetch(`${API_URL}/experiments`);
+                if (response.ok) {
+                    allExperiments = await response.json();
+                    document.getElementById('total-experiments').textContent = allExperiments.length;
+                }
+            } catch (error) {
+                console.error('Error loading experiments:', error);
+            }
+        }
         
         // Theme Management
         function initializeTheme() {
@@ -994,10 +1255,6 @@
             }
         }
         
-        function loadAllExperiments() {
-            // Placeholder function
-        }
-        
         // Load Sample Data
         function loadSampleData() {
             document.getElementById('variants-list').innerHTML = '';
@@ -1047,6 +1304,11 @@
                 localStorage.clear();
                 location.reload();
             }
+        }
+        
+        function updateAnalysisCharts() {
+            // Placeholder for analysis charts update
+            console.log('Updating analysis charts...');
         }
     </script>
 </body>
