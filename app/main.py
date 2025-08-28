@@ -39,7 +39,7 @@ logger.info(f"All env vars: {list(os.environ.keys())}")
 logger.info("=== END ENVIRONMENT DEBUG ===")
 
 from app.core.database import SessionLocal, engine
-from .models import Base, Allocation, Experiment
+from .models import Base, Allocation, Experiment, DailyMetric
 from .schemas import (
     ExperimentCreate, ExperimentResponse,
     MetricDataCreate, MetricDataResponse,
@@ -224,8 +224,28 @@ async def create_new_experiment(
 
 @app.get("/experiments/", response_model=List[ExperimentResponse])
 async def list_experiments(db: Session = Depends(get_db)):
-    """List all experiments"""
+    """List all experiments with their metrics"""
     experiments = db.query(Experiment).all()
+    
+    # Add metrics to each experiment for dashboard display
+    for exp in experiments:
+        metrics = db.query(DailyMetric).filter(
+            DailyMetric.experiment_id == exp.id
+        ).all()
+        
+        # Add metrics as a property for the response
+        exp.metrics = [
+            {
+                "date": m.date.isoformat() if m.date else None,
+                "variant_name": m.variant_name,
+                "impressions": m.impressions,
+                "clicks": m.clicks, 
+                "conversions": m.conversions,
+                "ctr": m.ctr
+            }
+            for m in metrics
+        ]
+    
     return experiments
 
 @app.get("/experiments/{experiment_id}", response_model=ExperimentResponse)

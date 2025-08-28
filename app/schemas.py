@@ -3,13 +3,25 @@ Pydantic schemas for request/response validation
 """
 
 from pydantic import BaseModel, validator
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from datetime import date, datetime
 
 class ExperimentCreate(BaseModel):
     """Schema for creating a new experiment"""
     name: str
     description: Optional[str] = None
+
+class MetricItem(BaseModel):
+    """Schema for individual metric item"""
+    date: Optional[str]
+    variant_name: str
+    impressions: int
+    clicks: int
+    conversions: int
+    ctr: float
+    
+    class Config:
+        from_attributes = True
 
 class ExperimentResponse(BaseModel):
     """Schema for experiment response"""
@@ -18,6 +30,7 @@ class ExperimentResponse(BaseModel):
     description: Optional[str]
     status: str
     created_at: datetime
+    metrics: Optional[List[Dict[str, Any]]] = []
     
     class Config:
         from_attributes = True
@@ -67,8 +80,6 @@ class VariantAllocation(BaseModel):
     ctr: float
     impressions: int
     clicks: int
-
-from typing import Dict, Any
 
 class AllocationResponse(BaseModel):
     """Schema for allocation calculation response"""
