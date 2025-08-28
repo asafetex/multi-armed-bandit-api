@@ -473,12 +473,20 @@
                     </div>
                     <div class="stat-item">
                         <div class="stat-value" id="avg-ctr">0%</div>
-                        <div class="stat-label">CTR Médio</div>
+                        <div class="stat-label" data-pt="CTR Médio" data-en="Avg CTR">CTR Médio</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="avg-conversion">0%</div>
+                        <div class="stat-label" data-pt="Taxa de Conversão" data-en="Conversion Rate">Taxa de Conversão</div>
                     </div>
                 </div>
+                <button class="theme-toggle" onclick="toggleLanguage()">
+                    <span class="theme-icon" id="lang-icon">🌐</span>
+                    <span id="lang-text" data-pt="English" data-en="Português">English</span>
+                </button>
                 <button class="theme-toggle" onclick="toggleTheme()">
                     <span class="theme-icon" id="theme-icon">🌙</span>
-                    <span id="theme-text">Dark Mode</span>
+                    <span id="theme-text" data-pt="Dark Mode" data-en="Dark Mode">Dark Mode</span>
                 </button>
             </div>
         </div>
@@ -811,13 +819,14 @@
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             initializeTheme();
+            initializeLanguage();
             initializeCharts();
             loadAllExperiments();
             
             // Add initial variants if empty
             if (document.getElementById('variants-list').children.length === 0) {
-                addVariant('control', 1000, 70);
-                addVariant('variant_b', 1000, 95);
+                addVariant('control', 1000, 70, 63);
+                addVariant('variant_b', 1000, 95, 86);
             }
         });
         
@@ -1007,7 +1016,7 @@
         }
         
         // Variants Management
-        function addVariant(name = '', impressions = '', clicks = '') {
+        function addVariant(name = '', impressions = '', clicks = '', conversions = '') {
             const container = document.getElementById('variants-list');
             const variantDiv = document.createElement('div');
             variantDiv.className = 'form-row';
@@ -1023,27 +1032,57 @@
                     <input type="number" class="form-control" placeholder="Cliques" value="${clicks}" min="0" required>
                 </div>
                 <div class="form-group">
+                    <input type="number" class="form-control" placeholder="Conversões" value="${conversions}" min="0" required>
+                </div>
+                <div class="form-group">
                     <button type="button" class="btn btn-danger btn-sm" onclick="this.closest('.form-row').remove()">Remover</button>
                 </div>
             `;
             container.appendChild(variantDiv);
         }
         
-        // Load Sample Data
+        // Load Sample Data - Now opens file upload
         function loadSampleData() {
-            // Get next available experiment ID
-            const experiments = JSON.parse(localStorage.getItem('experiments') || '[]');
-            const nextId = experiments.length > 0 ? Math.max(...experiments.map(e => e.id)) + 1 : 1;
+            // Switch to upload tab
+            switchTab({target: document.querySelector('[onclick*="upload"]')}, 'upload');
             
-            document.getElementById('event-exp-id').value = nextId;
-            document.getElementById('event-date').value = new Date().toISOString().split('T')[0];
+            // Focus on file input
+            setTimeout(() => {
+                document.getElementById('csv-file').click();
+            }, 100);
+        }
+        
+        // Language Management
+        function initializeLanguage() {
+            const savedLang = localStorage.getItem('language') || 'pt';
+            updateLanguage(savedLang);
+        }
+        
+        function toggleLanguage() {
+            const currentLang = localStorage.getItem('language') || 'pt';
+            const newLang = currentLang === 'pt' ? 'en' : 'pt';
             
-            // Clear existing variants
-            document.getElementById('variants-list').innerHTML = '';
+            localStorage.setItem('language', newLang);
+            updateLanguage(newLang);
+        }
+        
+        function updateLanguage(lang) {
+            // Update all elements with data-pt and data-en attributes
+            document.querySelectorAll('[data-pt][data-en]').forEach(element => {
+                element.textContent = element.getAttribute(`data-${lang}`);
+            });
             
-            // Add sample variants
-            addVariant('control', 10000, 700);
-            addVariant('variant_b', 10000, 950);
+            // Update language button
+            const langIcon = document.getElementById('lang-icon');
+            const langText = document.getElementById('lang-text');
+            
+            if (lang === 'en') {
+                langText.textContent = 'Português';
+                document.documentElement.setAttribute('lang', 'en');
+            } else {
+                langText.textContent = 'English';
+                document.documentElement.setAttribute('lang', 'pt-br');
+            }
         }
         
         // Form Submissions
