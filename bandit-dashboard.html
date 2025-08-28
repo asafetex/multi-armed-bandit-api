@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multi-Armed Bandit Analytics Dashboard</title>
+    <title data-pt="Multi-Armed Bandit Analytics Dashboard" data-en="Multi-Armed Bandit Analytics Dashboard">Multi-Armed Bandit Analytics Dashboard</title>
     
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -78,7 +78,7 @@
             gap: 2rem;
         }
         
-        /* Dark Mode Toggle */
+        /* Theme Toggle */
         .theme-toggle {
             background: rgba(255, 255, 255, 0.2);
             border: 2px solid rgba(255, 255, 255, 0.3);
@@ -446,6 +446,22 @@
             z-index: 1000;
         }
         
+        /* Language Toggle */
+        .language-toggle {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50px;
+            padding: 0.5rem 1rem;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
         /* Responsive */
         @media (max-width: 768px) {
             .header h1 {
@@ -467,16 +483,16 @@
     <!-- Header -->
     <div class="header">
         <div class="header-content">
-            <h1>🎯 Multi-Armed Bandit Analytics</h1>
+            <h1 data-pt="🎯 Multi-Armed Bandit Analytics" data-en="🎯 Multi-Armed Bandit Analytics">🎯 Multi-Armed Bandit Analytics</h1>
             <div class="header-controls">
                 <div class="header-stats">
                     <div class="stat-item">
                         <div class="stat-value" id="total-experiments">0</div>
-                        <div class="stat-label">Experimentos</div>
+                        <div class="stat-label" data-pt="Experimentos" data-en="Experiments">Experimentos</div>
                     </div>
                     <div class="stat-item">
                         <div class="stat-value" id="total-impressions">0</div>
-                        <div class="stat-label">Impressões Totais</div>
+                        <div class="stat-label" data-pt="Impressões Totais" data-en="Total Impressions">Impressões Totais</div>
                     </div>
                     <div class="stat-item">
                         <div class="stat-value" id="avg-ctr">0%</div>
@@ -505,19 +521,19 @@
         <div class="metrics-grid">
             <div class="metric-card">
                 <div class="metric-value" id="best-variant">-</div>
-                <div class="metric-label">Melhor Variante</div>
+                <div class="metric-label" data-pt="Melhor Variante" data-en="Best Variant">Melhor Variante</div>
             </div>
             <div class="metric-card">
                 <div class="metric-value" id="confidence-level">-</div>
-                <div class="metric-label">Confiança</div>
+                <div class="metric-label" data-pt="Confiança" data-en="Confidence">Confiança</div>
             </div>
             <div class="metric-card">
                 <div class="metric-value" id="regret-value">0</div>
-                <div class="metric-label">Regret Acumulado</div>
+                <div class="metric-label" data-pt="Regret Acumulado" data-en="Cumulative Regret">Regret Acumulado</div>
             </div>
             <div class="metric-card">
                 <div class="metric-value" id="convergence-rate">0%</div>
-                <div class="metric-label">Taxa Convergência</div>
+                <div class="metric-label" data-pt="Taxa Convergência" data-en="Convergence Rate">Taxa Convergência</div>
             </div>
         </div>
         
@@ -537,18 +553,18 @@
                 <!-- Create Experiment -->
                 <div class="card">
                     <div class="card-header">
-                        <h2 class="card-title">Criar Experimento</h2>
+                        <h2 class="card-title" data-pt="Criar Experimento" data-en="Create Experiment">Criar Experimento</h2>
                     </div>
                     <form id="create-experiment-form">
                         <div class="form-group">
-                            <label class="form-label">Nome do Experimento</label>
-                            <input type="text" class="form-control" id="exp-name" required>
+                            <label class="form-label" data-pt="Nome do Experimento" data-en="Experiment Name">Nome do Experimento</label>
+                            <input type="text" class="form-control" id="exp-name" required data-pt-placeholder="Digite o nome do experimento" data-en-placeholder="Enter experiment name">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Descrição</label>
-                            <textarea class="form-control" id="exp-description" rows="2"></textarea>
+                            <label class="form-label" data-pt="Descrição" data-en="Description">Descrição</label>
+                            <textarea class="form-control" id="exp-description" rows="2" data-pt-placeholder="Descrição opcional do experimento" data-en-placeholder="Optional experiment description"></textarea>
                         </div>
-                        <button type="submit" class="btn btn-primary">Criar Experimento</button>
+                        <button type="submit" class="btn btn-primary" data-pt="Criar Experimento" data-en="Create Experiment">Criar Experimento</button>
                         <div id="create-message"></div>
                     </form>
                 </div>
@@ -556,81 +572,83 @@
                 <!-- Submit Events -->
                 <div class="card">
                     <div class="card-header">
-                        <h2 class="card-title">Enviar Dados</h2>
+                        <h2 class="card-title" data-pt="Enviar Dados" data-en="Submit Data">Enviar Dados</h2>
                     </div>
                     <form id="submit-events-form">
                         <div class="form-row">
                             <div class="form-group">
-                                <label class="form-label">ID do Experimento</label>
+                                <label class="form-label" data-pt="ID do Experimento" data-en="Experiment ID">ID do Experimento</label>
                                 <input type="number" class="form-control" id="event-exp-id" required>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Data</label>
+                                <label class="form-label" data-pt="Data" data-en="Date">Data</label>
                                 <input type="date" class="form-control" id="event-date" required>
                             </div>
                         </div>
                         
                         <div id="variants-container">
-                            <label class="form-label">Variantes</label>
+                            <label class="form-label" data-pt="Variantes" data-en="Variants">Variantes</label>
                             <div id="variants-list"></div>
-                            <button type="button" class="btn btn-sm btn-primary" onclick="addVariant()">+ Adicionar Variante</button>
+                            <button type="button" class="btn btn-sm btn-primary" onclick="addVariant()" data-pt="+ Adicionar Variante" data-en="+ Add Variant">+ Adicionar Variante</button>
                         </div>
                         
                         <div class="btn-group">
-                            <button type="submit" class="btn btn-success">Enviar Dados</button>
-                            <button type="button" class="btn btn-primary" onclick="loadSampleData()">Carregar Exemplo</button>
-                            <button type="button" class="btn btn-warning" onclick="downloadTemplate()">📊 Modelo de Dados</button>
-                        </div>
-                        
-                        <!-- Upload Section -->
-                        <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 2px solid var(--light);">
-                            <h4 style="margin-bottom: 1rem;">📤 Upload de Dados em Lote</h4>
-                            <form id="upload-form" enctype="multipart/form-data">
-                                <div class="form-group">
-                                    <label class="form-label">Selecionar Arquivo CSV</label>
-                                    <input type="file" class="form-control" id="csv-file" accept=".csv" required>
-                                    <small style="color: #666; margin-top: 0.5rem; display: block;">
-                                        Apenas arquivos .csv são aceitos. Estrutura: experiment_id, date, variant_name, impressions, clicks, conversions
-                                    </small>
-                                </div>
-                                <button type="submit" class="btn btn-success">
-                                    🚀 Enviar Dados
-                                </button>
-                            </form>
-                            <div id="upload-message"></div>
-                            
-                            <!-- Upload Results -->
-                            <div id="upload-results" style="display: none; margin-top: 1rem;">
-                                <div id="upload-summary"></div>
-                                <div id="upload-errors" style="margin-top: 1rem;"></div>
-                            </div>
+                            <button type="submit" class="btn btn-success" data-pt="Enviar Dados" data-en="Submit Data">Enviar Dados</button>
                         </div>
                         <div id="events-message"></div>
                     </form>
                 </div>
             </div>
             
+            <!-- Upload Section - Independent -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title" data-pt="📤 Upload de Dados em Lote" data-en="📤 Bulk Data Upload">📤 Upload de Dados em Lote</h2>
+                </div>
+                <form id="upload-form" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label class="form-label" data-pt="Selecionar Arquivo CSV" data-en="Select CSV File">Selecionar Arquivo CSV</label>
+                        <input type="file" class="form-control" id="csv-file" accept=".csv" required>
+                        <small style="color: #666; margin-top: 0.5rem; display: block;" data-pt="O arquivo deve conter todas as informações necessárias: experiment_id, date, variant_name, impressions, clicks, conversions. Múltiplos experimentos e datas podem ser incluídos no mesmo arquivo." data-en="File must contain all necessary information: experiment_id, date, variant_name, impressions, clicks, conversions. Multiple experiments and dates can be included in the same file.">
+                            O arquivo deve conter todas as informações necessárias: experiment_id, date, variant_name, impressions, clicks, conversions. Múltiplos experimentos e datas podem ser incluídos no mesmo arquivo.
+                        </small>
+                    </div>
+                    <div class="btn-group">
+                        <button type="submit" class="btn btn-success" data-pt="🚀 Enviar Dados" data-en="🚀 Upload Data">🚀 Enviar Dados</button>
+                        <button type="button" class="btn btn-primary" onclick="loadSampleData()" data-pt="📁 Carregar Exemplo" data-en="📁 Load Sample">📁 Carregar Exemplo</button>
+                        <button type="button" class="btn btn-warning" onclick="downloadTemplate()" data-pt="📊 Baixar Modelo" data-en="📊 Download Template">📊 Baixar Modelo</button>
+                    </div>
+                </form>
+                <div id="upload-message"></div>
+                
+                <!-- Upload Results -->
+                <div id="upload-results" style="display: none; margin-top: 1rem;">
+                    <div id="upload-summary"></div>
+                    <div id="upload-errors" style="margin-top: 1rem;"></div>
+                </div>
+            </div>
+            
             <!-- Get Allocation -->
             <div class="card">
                 <div class="card-header">
-                    <h2 class="card-title">Calcular Alocação Ótima</h2>
+                    <h2 class="card-title" data-pt="Calcular Alocação Ótima" data-en="Calculate Optimal Allocation">Calcular Alocação Ótima</h2>
                 </div>
                 <form id="get-allocation-form">
                     <div class="form-row">
                         <div class="form-group">
-                            <label class="form-label">ID do Experimento</label>
+                            <label class="form-label" data-pt="ID do Experimento" data-en="Experiment ID">ID do Experimento</label>
                             <input type="number" class="form-control" id="allocation-exp-id" required>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Janela (dias)</label>
+                            <label class="form-label" data-pt="Janela (dias)" data-en="Window (days)">Janela (dias)</label>
                             <input type="number" class="form-control" id="window-days" value="14" min="1" max="90">
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary">Calcular Alocação</button>
+                    <button type="submit" class="btn btn-primary" data-pt="Calcular Alocação" data-en="Calculate Allocation">Calcular Alocação</button>
                 </form>
                 
                 <div id="allocation-results" style="margin-top: 2rem; display: none;">
-                    <h3>Alocação Recomendada</h3>
+                    <h3 data-pt="Alocação Recomendada" data-en="Recommended Allocation">Alocação Recomendada</h3>
                     <div id="allocation-display" class="allocation-grid"></div>
                 </div>
             </div>
@@ -642,7 +660,7 @@
                 <!-- CTR Performance Chart -->
                 <div class="card">
                     <div class="card-header">
-                        <h2 class="card-title">Performance CTR</h2>
+                        <h2 class="card-title" data-pt="Performance CTR" data-en="CTR Performance">Performance CTR</h2>
                     </div>
                     <div class="chart-container">
                         <canvas id="ctr-chart"></canvas>
@@ -652,7 +670,7 @@
                 <!-- Allocation History Chart -->
                 <div class="card">
                     <div class="card-header">
-                        <h2 class="card-title">Evolução da Alocação</h2>
+                        <h2 class="card-title" data-pt="Evolução da Alocação" data-en="Allocation Evolution">Evolução da Alocação</h2>
                     </div>
                     <div class="chart-container">
                         <canvas id="allocation-chart"></canvas>
@@ -662,7 +680,7 @@
                 <!-- Regret Analysis -->
                 <div class="card">
                     <div class="card-header">
-                        <h2 class="card-title">Análise de Regret</h2>
+                        <h2 class="card-title" data-pt="Análise de Regret" data-en="Regret Analysis">Análise de Regret</h2>
                     </div>
                     <div class="chart-container">
                         <canvas id="regret-chart"></canvas>
@@ -672,7 +690,7 @@
                 <!-- Confidence Intervals -->
                 <div class="card">
                     <div class="card-header">
-                        <h2 class="card-title">Intervalos de Confiança</h2>
+                        <h2 class="card-title" data-pt="Intervalos de Confiança" data-en="Confidence Intervals">Intervalos de Confiança</h2>
                     </div>
                     <div class="chart-container">
                         <canvas id="confidence-chart"></canvas>
@@ -683,22 +701,22 @@
             <!-- Results Table -->
             <div class="card">
                 <div class="card-header">
-                    <h2 class="card-title">Dados Detalhados</h2>
+                    <h2 class="card-title" data-pt="Dados Detalhados" data-en="Detailed Data">Dados Detalhados</h2>
                 </div>
                 <div class="table-container">
                     <table>
                         <thead>
                             <tr>
-                                <th>Data</th>
-                                <th>Variante</th>
-                                <th>Impressões</th>
-                                <th>Cliques</th>
+                                <th data-pt="Data" data-en="Date">Data</th>
+                                <th data-pt="Variante" data-en="Variant">Variante</th>
+                                <th data-pt="Impressões" data-en="Impressions">Impressões</th>
+                                <th data-pt="Cliques" data-en="Clicks">Cliques</th>
                                 <th>CTR</th>
-                                <th>Alocação</th>
+                                <th data-pt="Alocação" data-en="Allocation">Alocação</th>
                             </tr>
                         </thead>
                         <tbody id="results-table">
-                            <tr><td colspan="6" style="text-align: center;">Nenhum dado disponível</td></tr>
+                            <tr><td colspan="6" style="text-align: center;" data-pt="Nenhum dado disponível" data-en="No data available">Nenhum dado disponível</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -709,27 +727,27 @@
         <div id="simulation-tab" class="tab-content">
             <div class="card">
                 <div class="card-header">
-                    <h2 class="card-title">Simulador de Cenários</h2>
+                    <h2 class="card-title" data-pt="Simulador de Cenários" data-en="Scenario Simulator">Simulador de Cenários</h2>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label class="form-label">Dias para Simular</label>
+                        <label class="form-label" data-pt="Dias para Simular" data-en="Days to Simulate">Dias para Simular</label>
                         <input type="number" class="form-control" id="sim-days" value="30" min="1" max="365">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Impressões por Dia</label>
+                        <label class="form-label" data-pt="Impressões por Dia" data-en="Impressions per Day">Impressões por Dia</label>
                         <input type="number" class="form-control" id="sim-impressions" value="10000" min="100">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">CTR Control (%)</label>
+                        <label class="form-label" data-pt="CTR Control (%)" data-en="CTR Control (%)">CTR Control (%)</label>
                         <input type="number" class="form-control" id="sim-ctr-control" value="7" min="0" max="100" step="0.1">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">CTR Variant B (%)</label>
+                        <label class="form-label" data-pt="CTR Variant B (%)" data-en="CTR Variant B (%)">CTR Variant B (%)</label>
                         <input type="number" class="form-control" id="sim-ctr-variant" value="9.5" min="0" max="100" step="0.1">
                     </div>
                 </div>
-                <button class="btn btn-primary" onclick="runSimulation()">Executar Simulação</button>
+                <button class="btn btn-primary" onclick="runSimulation()" data-pt="Executar Simulação" data-en="Run Simulation">Executar Simulação</button>
                 
                 <div id="simulation-results" style="margin-top: 2rem; display: none;">
                     <div class="grid grid-2">
@@ -744,143 +762,277 @@
             </div>
         </div>
         
-        <!-- Upload Tab -->
-        <div id="upload-tab" class="tab-content">
+        <!-- Settings Tab -->
+        <div id="settings-tab" class="tab-content">
             <div class="grid grid-2">
-                <!-- Download Template -->
+                <!-- API Configuration -->
                 <div class="card">
                     <div class="card-header">
-                        <h2 class="card-title">📊 Modelo de Dados</h2>
+                        <h2 class="card-title" data-pt="Configuração da API" data-en="API Configuration">Configuração da API</h2>
                     </div>
-                    <div class="alert alert-warning">
-                        <strong>Estrutura do CSV:</strong><br>
-                        • experiment_id, date, variant_name, impressions, clicks, conversions<br>
-                        • Formato de data: YYYY-MM-DD<br>
-                        • Cliques ≤ Impressões, Conversões ≤ Cliques
-                    </div>
-                    <p>Baixe o modelo de dados CSV com exemplos de 14 dias de dados realistas para 3 variantes (control, variant_a, variant_b).</p>
-                    <button class="btn btn-primary" onclick="downloadTemplate()">
-                        📥 Baixar Modelo CSV
-                    </button>
+                    <form id="api-config-form">
+                        <div class="form-group">
+                            <label class="form-label" data-pt="URL Base da API" data-en="API Base URL">URL Base da API</label>
+                            <input type="url" class="form-control" id="api-base-url" value="http://localhost:8000" data-pt-placeholder="https://sua-api.com" data-en-placeholder="https://your-api.com">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" data-pt="Timeout (segundos)" data-en="Timeout (seconds)">Timeout (segundos)</label>
+                            <input type="number" class="form-control" id="api-timeout" value="30" min="5" max="300">
+                        </div>
+                        <button type="submit" class="btn btn-primary" data-pt="Salvar Configurações" data-en="Save Settings">Salvar Configurações</button>
+                        <div id="api-config-message"></div>
+                    </form>
                 </div>
                 
-                <!-- Upload File -->
+                <!-- Display Preferences -->
                 <div class="card">
                     <div class="card-header">
-                        <h2 class="card-title">📤 Upload de Dados</h2>
+                        <h2 class="card-title" data-pt="Preferências de Exibição" data-en="Display Preferences">Preferências de Exibição</h2>
                     </div>
-                    <form id="upload-form" enctype="multipart/form-data">
+                    <form id="display-preferences-form">
                         <div class="form-group">
-                            <label class="form-label">Selecionar Arquivo CSV</label>
-                            <input type="file" class="form-control" id="csv-file" accept=".csv" required>
-                            <small style="color: #666; margin-top: 0.5rem; display: block;">
-                                Apenas arquivos .csv são aceitos
-                            </small>
+                            <label class="form-label" data-pt="Tema" data-en="Theme">Tema</label>
+                            <select class="form-control" id="theme-select">
+                                <option value="light" data-pt="Claro" data-en="Light">Claro</option>
+                                <option value="dark" data-pt="Escuro" data-en="Dark">Escuro</option>
+                            </select>
                         </div>
-                        <button type="submit" class="btn btn-success">
-                            🚀 Enviar Dados
-                        </button>
+                        <div class="form-group">
+                            <label class="form-label" data-pt="Idioma" data-en="Language">Idioma</label>
+                            <select class="form-control" id="language-select">
+                                <option value="pt" data-pt="Português" data-en="Portuguese">Português</option>
+                                <option value="en" data-pt="Inglês" data-en="English">Inglês</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" data-pt="Atualização Automática (segundos)" data-en="Auto Refresh (seconds)">Atualização Automática (segundos)</label>
+                            <input type="number" class="form-control" id="auto-refresh" value="0" min="0" max="300" data-pt-placeholder="0 = desabilitado" data-en-placeholder="0 = disabled">
+                        </div>
+                        <button type="submit" class="btn btn-primary" data-pt="Aplicar Preferências" data-en="Apply Preferences">Aplicar Preferências</button>
+                        <div id="display-preferences-message"></div>
                     </form>
-                    <div id="upload-message"></div>
                 </div>
             </div>
             
-            <!-- Upload Results -->
-            <div id="upload-results" class="card" style="display: none; margin-top: 2rem;">
-                <div class="card-header">
-                    <h2 class="card-title">Resultado do Upload</h2>
-                </div>
-                <div id="upload-summary"></div>
-                <div id="upload-errors" style="margin-top: 1rem;"></div>
-            </div>
-        </div>
-        
-        <!-- Settings Tab -->
-        <div id="settings-tab" class="tab-content">
+            <!-- Data Management -->
             <div class="card">
                 <div class="card-header">
-                    <h2 class="card-title">Configurações do Algoritmo</h2>
+                    <h2 class="card-title" data-pt="Gerenciamento de Dados" data-en="Data Management">Gerenciamento de Dados</h2>
                 </div>
-                <div class="alert alert-warning">
-                    Estas configurações afetam o comportamento do algoritmo Thompson Sampling
+                <div class="btn-group">
+                    <button class="btn btn-warning" onclick="exportAllData()" data-pt="📥 Exportar Todos os Dados" data-en="📥 Export All Data">📥 Exportar Todos os Dados</button>
+                    <button class="btn btn-danger" onclick="clearAllData()" data-pt="🗑️ Limpar Cache Local" data-en="🗑️ Clear Local Cache">🗑️ Limpar Cache Local</button>
+                    <button class="btn btn-primary" onclick="testConnection()" data-pt="🔗 Testar Conexão" data-en="🔗 Test Connection">🔗 Testar Conexão</button>
                 </div>
-                <div class="grid grid-2">
-                    <div class="form-group">
-                        <label class="form-label">Alpha Prior (Thompson Sampling)</label>
-                        <input type="number" class="form-control" id="alpha-prior" value="1" min="0.1" step="0.1">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Beta Prior (Thompson Sampling)</label>
-                        <input type="number" class="form-control" id="beta-prior" value="1" min="0.1" step="0.1">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Taxa de Exploração Mínima (%)</label>
-                        <input type="number" class="form-control" id="min-explore" value="5" min="0" max="50">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Piso do Control (%)</label>
-                        <input type="number" class="form-control" id="control-floor" value="10" min="0" max="50">
-                    </div>
-                </div>
-                <button class="btn btn-primary" onclick="saveSettings()">Salvar Configurações</button>
-                <div id="settings-message"></div>
+                <div id="data-management-message"></div>
             </div>
         </div>
     </div>
     
     <!-- Reset Button -->
     <div class="reset-section">
-        <button class="btn btn-danger" onclick="resetAllData()">🗑️ Limpar Todos os Dados</button>
+        <button class="btn btn-danger" onclick="resetDashboard()" data-pt="🔄 Reset Dashboard" data-en="🔄 Reset Dashboard">🔄 Reset Dashboard</button>
     </div>
-    
+
     <script>
-        // API Configuration
-        const API_URL = window.location.origin;
+        // Global variables for translation and configuration
+        let currentLanguage = localStorage.getItem('dashboard-language') || 'pt';
+        let currentTheme = localStorage.getItem('dashboard-theme') || 'light';
+        let apiBaseUrl = localStorage.getItem('api-base-url') || 'http://localhost:8000';
+        let autoRefreshInterval = null;
         
-        // Debug API URL
-        console.log('API_URL:', API_URL);
-        console.log('Current location:', window.location);
-        
-        // Global variables
-        let charts = {};
-        let allExperiments = [];
-        let currentExperimentData = null;
-        
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            initializeTheme();
-            initializeLanguage();
-            initializeCharts();
-            loadAllExperiments();
-            
-            // Add initial variants if empty
-            if (document.getElementById('variants-list').children.length === 0) {
-                addVariant('control', 1000, 70, 63);
-                addVariant('variant_b', 1000, 95, 86);
+        // Translation messages
+        const messages = {
+            pt: {
+                experimentCreated: 'Experimento criado com sucesso!',
+                experimentError: 'Erro ao criar experimento',
+                dataSubmitted: 'Dados enviados com sucesso!',
+                dataError: 'Erro ao enviar dados',
+                uploadSuccess: 'Upload realizado com sucesso!',
+                uploadError: 'Erro no upload',
+                allocationCalculated: 'Alocação calculada com sucesso!',
+                allocationError: 'Erro ao calcular alocação',
+                connectionSuccess: 'Conexão estabelecida com sucesso!',
+                connectionError: 'Erro de conexão com a API',
+                settingsSaved: 'Configurações salvas!',
+                preferencesApplied: 'Preferências aplicadas!',
+                dataExported: 'Dados exportados com sucesso!',
+                cacheCleared: 'Cache local limpo!',
+                confirmReset: 'Tem certeza que deseja resetar o dashboard?',
+                confirmClear: 'Tem certeza que deseja limpar o cache local?',
+                noDataAvailable: 'Nenhum dado disponível',
+                loading: 'Carregando...',
+                error: 'Erro',
+                success: 'Sucesso',
+                warning: 'Aviso',
+                variantName: 'Nome da Variante',
+                impressions: 'Impressões',
+                clicks: 'Cliques',
+                conversions: 'Conversões',
+                removeVariant: 'Remover',
+                addVariant: 'Adicionar Variante',
+                selectFile: 'Selecionar arquivo',
+                fileSelected: 'arquivo selecionado',
+                processingUpload: 'Processando upload...',
+                uploadComplete: 'Upload concluído',
+                validationErrors: 'Erros de validação encontrados:',
+                rowsProcessed: 'linhas processadas',
+                rowsSuccess: 'linhas com sucesso',
+                rowsErrors: 'linhas com erro'
+            },
+            en: {
+                experimentCreated: 'Experiment created successfully!',
+                experimentError: 'Error creating experiment',
+                dataSubmitted: 'Data submitted successfully!',
+                dataError: 'Error submitting data',
+                uploadSuccess: 'Upload completed successfully!',
+                uploadError: 'Upload error',
+                allocationCalculated: 'Allocation calculated successfully!',
+                allocationError: 'Error calculating allocation',
+                connectionSuccess: 'Connection established successfully!',
+                connectionError: 'API connection error',
+                settingsSaved: 'Settings saved!',
+                preferencesApplied: 'Preferences applied!',
+                dataExported: 'Data exported successfully!',
+                cacheCleared: 'Local cache cleared!',
+                confirmReset: 'Are you sure you want to reset the dashboard?',
+                confirmClear: 'Are you sure you want to clear the local cache?',
+                noDataAvailable: 'No data available',
+                loading: 'Loading...',
+                error: 'Error',
+                success: 'Success',
+                warning: 'Warning',
+                variantName: 'Variant Name',
+                impressions: 'Impressions',
+                clicks: 'Clicks',
+                conversions: 'Conversions',
+                removeVariant: 'Remove',
+                addVariant: 'Add Variant',
+                selectFile: 'Select file',
+                fileSelected: 'file selected',
+                processingUpload: 'Processing upload...',
+                uploadComplete: 'Upload complete',
+                validationErrors: 'Validation errors found:',
+                rowsProcessed: 'rows processed',
+                rowsSuccess: 'rows successful',
+                rowsErrors: 'rows with errors'
             }
+        };
+        
+        // Initialize dashboard on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeDashboard();
+            setupEventListeners();
+            loadDashboardData();
         });
         
-        // Theme Management
-        function initializeTheme() {
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            document.documentElement.setAttribute('data-theme', savedTheme);
-            updateThemeButton(savedTheme);
-        }
-        
-        function toggleTheme() {
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        // Initialize dashboard settings
+        function initializeDashboard() {
+            // Apply saved theme
+            document.body.setAttribute('data-theme', currentTheme);
+            document.getElementById('theme-select').value = currentTheme;
+            updateThemeIcon();
             
-            document.documentElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-            updateThemeButton(newTheme);
+            // Apply saved language
+            document.getElementById('language-select').value = currentLanguage;
+            updateLanguage();
+            
+            // Set API base URL
+            document.getElementById('api-base-url').value = apiBaseUrl;
+            
+            // Set today's date as default
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('event-date').value = today;
+            
+            // Add initial variant
+            addVariant();
         }
         
-        function updateThemeButton(theme) {
+        // Setup all event listeners
+        function setupEventListeners() {
+            // Form submissions
+            document.getElementById('create-experiment-form').addEventListener('submit', createExperiment);
+            document.getElementById('submit-events-form').addEventListener('submit', submitEvents);
+            document.getElementById('get-allocation-form').addEventListener('submit', getAllocation);
+            document.getElementById('upload-form').addEventListener('submit', uploadCSV);
+            document.getElementById('api-config-form').addEventListener('submit', saveApiConfig);
+            document.getElementById('display-preferences-form').addEventListener('submit', applyDisplayPreferences);
+            
+            // File input change
+            document.getElementById('csv-file').addEventListener('change', handleFileSelect);
+        }
+        
+        // Language toggle function
+        function toggleLanguage() {
+            currentLanguage = currentLanguage === 'pt' ? 'en' : 'pt';
+            localStorage.setItem('dashboard-language', currentLanguage);
+            document.getElementById('language-select').value = currentLanguage;
+            updateLanguage();
+        }
+        
+        // Update all text elements based on current language
+        function updateLanguage() {
+            const elements = document.querySelectorAll('[data-pt][data-en]');
+            elements.forEach(element => {
+                const text = element.getAttribute(`data-${currentLanguage}`);
+                if (text) {
+                    element.textContent = text;
+                }
+            });
+            
+            // Update placeholders
+            const placeholderElements = document.querySelectorAll(`[data-${currentLanguage}-placeholder]`);
+            placeholderElements.forEach(element => {
+                const placeholder = element.getAttribute(`data-${currentLanguage}-placeholder`);
+                if (placeholder) {
+                    element.placeholder = placeholder;
+                }
+            });
+            
+            // Update variant placeholders
+            updateVariantPlaceholders();
+            
+            // Update language toggle text
+            const langText = document.getElementById('lang-text');
+            langText.textContent = currentLanguage === 'pt' ? 'English' : 'Português';
+            
+            // Update HTML lang attribute
+            document.documentElement.lang = currentLanguage === 'pt' ? 'pt-br' : 'en';
+        }
+        
+        // Update variant placeholders
+        function updateVariantPlaceholders() {
+            const variantInputs = document.querySelectorAll('.variant-name-input, .variant-impressions-input, .variant-clicks-input, .variant-conversions-input');
+            variantInputs.forEach(input => {
+                const placeholder = input.getAttribute(`data-${currentLanguage}-placeholder`);
+                if (placeholder) {
+                    input.placeholder = placeholder;
+                }
+            });
+            
+            const variantButtons = document.querySelectorAll('.variant-remove-btn');
+            variantButtons.forEach(button => {
+                const text = button.getAttribute(`data-${currentLanguage}`);
+                if (text) {
+                    button.textContent = text;
+                }
+            });
+        }
+        
+        // Theme toggle function
+        function toggleTheme() {
+            currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+            localStorage.setItem('dashboard-theme', currentTheme);
+            document.body.setAttribute('data-theme', currentTheme);
+            document.getElementById('theme-select').value = currentTheme;
+            updateThemeIcon();
+        }
+        
+        // Update theme icon
+        function updateThemeIcon() {
             const themeIcon = document.getElementById('theme-icon');
             const themeText = document.getElementById('theme-text');
-            
-            if (theme === 'dark') {
+            if (currentTheme === 'dark') {
                 themeIcon.textContent = '☀️';
                 themeText.textContent = 'Light Mode';
             } else {
@@ -889,267 +1041,111 @@
             }
         }
         
-        // Tab switching
+        // Tab switching function
         function switchTab(event, tabName) {
-            // Hide all tabs
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            // Remove active from all tab buttons
-            document.querySelectorAll('.tab').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            // Show selected tab
-            document.getElementById(`${tabName}-tab`).classList.add('active');
-            // Mark button as active
+            // Remove active class from all tabs and contents
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            // Add active class to clicked tab and corresponding content
             event.target.classList.add('active');
-            
-            // Load analysis data when switching to analysis tab
-            if (tabName === 'analysis' && currentExperimentData) {
-                updateAnalysisCharts();
-            }
+            document.getElementById(tabName + '-tab').classList.add('active');
         }
         
-        // Initialize Charts
-        function initializeCharts() {
-            // CTR Chart
-            const ctrCtx = document.getElementById('ctr-chart').getContext('2d');
-            charts.ctr = new Chart(ctrCtx, {
-                type: 'line',
-                data: {
-                    labels: [],
-                    datasets: []
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: { callback: value => value.toFixed(1) + '%' }
-                        }
-                    }
-                }
-            });
+        // Show message function with translation support
+        function showMessage(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            const translatedMessage = messages[currentLanguage][message] || message;
             
-            // Allocation Chart
-            const allocCtx = document.getElementById('allocation-chart').getContext('2d');
-            charts.allocation = new Chart(allocCtx, {
-                type: 'line',
-                data: {
-                    labels: [],
-                    datasets: []
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 100,
-                            ticks: { callback: value => value + '%' }
-                        }
-                    }
-                }
-            });
-            
-            // Regret Chart
-            const regretCtx = document.getElementById('regret-chart').getContext('2d');
-            charts.regret = new Chart(regretCtx, {
-                type: 'line',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        label: 'Regret Acumulado',
-                        data: [],
-                        borderColor: '#e74c3c',
-                        backgroundColor: 'rgba(231, 76, 60, 0.1)',
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false
-                }
-            });
-            
-            // Confidence Chart
-            const confCtx = document.getElementById('confidence-chart').getContext('2d');
-            charts.confidence = new Chart(confCtx, {
-                type: 'bar',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        label: 'CTR com Intervalo de Confiança',
-                        data: [],
-                        backgroundColor: 'rgba(74, 144, 226, 0.6)',
-                        borderColor: '#4a90e2',
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: { callback: value => value.toFixed(1) + '%' }
-                        }
-                    }
-                }
-            });
+            element.innerHTML = `<div class="alert alert-${type}">${translatedMessage}</div>`;
+            setTimeout(() => {
+                element.innerHTML = '';
+            }, 5000);
         }
         
-        // Load all experiments to update header stats
-        async function loadAllExperiments() {
+        // API request helper function
+        async function apiRequest(endpoint, options = {}) {
+            const url = `${apiBaseUrl}${endpoint}`;
+            const defaultOptions = {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                timeout: 30000
+            };
+            
             try {
-                // For now, we'll simulate with local data
-                // In production, this would fetch from API
-                updateHeaderStats();
-            } catch (error) {
-                console.error('Error loading experiments:', error);
-            }
-        }
-        
-        // Update Header Stats
-        function updateHeaderStats() {
-            // Get stored experiment count
-            const experiments = JSON.parse(localStorage.getItem('experiments') || '[]');
-            document.getElementById('total-experiments').textContent = experiments.length || '0';
-            
-            // Calculate total impressions and CTR from stored data
-            const events = JSON.parse(localStorage.getItem('events') || '[]');
-            let totalImpressions = 0;
-            let totalClicks = 0;
-            
-            events.forEach(event => {
-                if (event.variants) {
-                    event.variants.forEach(v => {
-                        totalImpressions += v.impressions || 0;
-                        totalClicks += v.clicks || 0;
-                    });
+                const response = await fetch(url, { ...defaultOptions, ...options });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
-            });
-            
-            // Format impressions
-            const impDisplay = totalImpressions > 1000000 ? 
-                (totalImpressions / 1000000).toFixed(1) + 'M' :
-                totalImpressions > 1000 ?
-                (totalImpressions / 1000).toFixed(1) + 'K' :
-                totalImpressions.toString();
-            
-            document.getElementById('total-impressions').textContent = impDisplay;
-            
-            // Calculate average CTR
-            const avgCtr = totalImpressions > 0 ? ((totalClicks / totalImpressions) * 100).toFixed(1) : '0';
-            document.getElementById('avg-ctr').textContent = avgCtr + '%';
-        }
-        
-        // Variants Management
-        function addVariant(name = '', impressions = '', clicks = '', conversions = '') {
-            const container = document.getElementById('variants-list');
-            const variantDiv = document.createElement('div');
-            variantDiv.className = 'variant-row';
-            variantDiv.style.marginBottom = '0.5rem';
-            variantDiv.innerHTML = `
-                <input type="text" class="form-control" placeholder="Nome da Variante" value="${name}" required>
-                <input type="number" class="form-control" placeholder="Impressões" value="${impressions}" min="0" required>
-                <input type="number" class="form-control" placeholder="Cliques" value="${clicks}" min="0" required>
-                <input type="number" class="form-control" placeholder="Conversões" value="${conversions}" min="0" required>
-                <button type="button" class="btn btn-danger btn-sm" onclick="this.closest('.variant-row').remove()">×</button>
-            `;
-            container.appendChild(variantDiv);
-        }
-        
-        // Load Sample Data - Now opens file upload directly
-        function loadSampleData() {
-            // Directly trigger file input click
-            document.getElementById('csv-file').click();
-        }
-        
-        // Language Management
-        function initializeLanguage() {
-            const savedLang = localStorage.getItem('language') || 'pt';
-            updateLanguage(savedLang);
-        }
-        
-        function toggleLanguage() {
-            const currentLang = localStorage.getItem('language') || 'pt';
-            const newLang = currentLang === 'pt' ? 'en' : 'pt';
-            
-            localStorage.setItem('language', newLang);
-            updateLanguage(newLang);
-        }
-        
-        function updateLanguage(lang) {
-            // Update all elements with data-pt and data-en attributes
-            document.querySelectorAll('[data-pt][data-en]').forEach(element => {
-                element.textContent = element.getAttribute(`data-${lang}`);
-            });
-            
-            // Update language button
-            const langIcon = document.getElementById('lang-icon');
-            const langText = document.getElementById('lang-text');
-            
-            if (lang === 'en') {
-                langText.textContent = 'Português';
-                document.documentElement.setAttribute('lang', 'en');
-            } else {
-                langText.textContent = 'English';
-                document.documentElement.setAttribute('lang', 'pt-br');
+                
+                return await response.json();
+            } catch (error) {
+                console.error('API Request Error:', error);
+                throw error;
             }
         }
         
-        // Form Submissions
-        document.getElementById('create-experiment-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
+        // Create experiment function
+        async function createExperiment(event) {
+            event.preventDefault();
+            
             const name = document.getElementById('exp-name').value;
             const description = document.getElementById('exp-description').value;
             
-            console.log('Tentando criar experimento:', { name, description });
-            console.log('URL da requisição:', `${API_URL}/experiments`);
-            
             try {
-                const response = await fetch(`${API_URL}/experiments`, {
+                const response = await apiRequest('/experiments/', {
                     method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
                     body: JSON.stringify({ name, description })
                 });
                 
-                console.log('Response status:', response.status);
-                console.log('Response headers:', response.headers);
-                
-                const data = await response.json();
-                console.log('Response data:', data);
-                
-                if (response.ok) {
-                    // Store experiment locally
-                    const experiments = JSON.parse(localStorage.getItem('experiments') || '[]');
-                    experiments.push(data);
-                    localStorage.setItem('experiments', JSON.stringify(experiments));
-                    
-                    showMessage('create-message', `✅ Experimento criado! ID: ${data.id}`, 'success');
-                    document.getElementById('create-experiment-form').reset();
-                    updateHeaderStats();
-                } else {
-                    showMessage('create-message', `❌ Erro: ${data.detail || 'Falha ao criar experimento'}`, 'danger');
-                }
+                showMessage('create-message', 'experimentCreated', 'success');
+                document.getElementById('create-experiment-form').reset();
+                loadDashboardData();
             } catch (error) {
-                console.error('Erro na requisição:', error);
-                showMessage('create-message', `❌ Erro de conexão: ${error.message}`, 'danger');
+                showMessage('create-message', 'experimentError', 'danger');
             }
-        });
+        }
         
-        document.getElementById('submit-events-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
+        // Add variant function
+        function addVariant() {
+            const variantsList = document.getElementById('variants-list');
+            const variantCount = variantsList.children.length;
+            
+            const variantDiv = document.createElement('div');
+            variantDiv.className = 'variant-row';
+            variantDiv.innerHTML = `
+                <input type="text" class="form-control variant-name-input" data-pt-placeholder="Nome da Variante" data-en-placeholder="Variant Name" required>
+                <input type="number" class="form-control variant-impressions-input" data-pt-placeholder="Impressões" data-en-placeholder="Impressions" min="0" required>
+                <input type="number" class="form-control variant-clicks-input" data-pt-placeholder="Cliques" data-en-placeholder="Clicks" min="0" required>
+                <input type="number" class="form-control variant-conversions-input" data-pt-placeholder="Conversões" data-en-placeholder="Conversions" min="0" required>
+                <button type="button" class="btn btn-sm btn-danger variant-remove-btn" onclick="removeVariant(this)" data-pt="Remover" data-en="Remove">Remover</button>
+            `;
+            
+            variantsList.appendChild(variantDiv);
+            
+            // Update placeholders for the new variant
+            updateVariantPlaceholders();
+        }
+        
+        // Remove variant function
+        function removeVariant(button) {
+            const variantsList = document.getElementById('variants-list');
+            if (variantsList.children.length > 1) {
+                button.parentElement.remove();
+            }
+        }
+        
+        // Submit events function
+        async function submitEvents(event) {
+            event.preventDefault();
+            
             const experimentId = parseInt(document.getElementById('event-exp-id').value);
             const date = document.getElementById('event-date').value;
-            
             const variants = [];
-            document.querySelectorAll('#variants-list .variant-row').forEach(row => {
+            
+            document.querySelectorAll('.variant-row').forEach(row => {
                 const inputs = row.querySelectorAll('input');
                 variants.push({
                     variant_name: inputs[0].value,
@@ -1159,539 +1155,95 @@
                 });
             });
             
-            const eventData = {
-                experiment_id: experimentId,
-                date: date,
-                variants: variants
-            };
+            try {
+                for (const variant of variants) {
+                    await apiRequest('/events/', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            experiment_id: experimentId,
+                            date: date,
+                            ...variant
+                        })
+                    });
+                }
+                
+                showMessage('events-message', 'dataSubmitted', 'success');
+                document.getElementById('submit-events-form').reset();
+                document.getElementById('variants-list').innerHTML = '';
+                addVariant();
+                loadDashboardData();
+            } catch (error) {
+                showMessage('events-message', 'dataError', 'danger');
+            }
+        }
+        
+        // Get allocation function
+        async function getAllocation(event) {
+            event.preventDefault();
+            
+            const experimentId = parseInt(document.getElementById('allocation-exp-id').value);
+            const windowDays = parseInt(document.getElementById('window-days').value);
             
             try {
-                const response = await fetch(`${API_URL}/events`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(eventData)
-                });
+                const response = await apiRequest(`/allocation/${experimentId}?window_days=${windowDays}`);
                 
-                if (response.ok) {
-                    // Store event locally
-                    const events = JSON.parse(localStorage.getItem('events') || '[]');
-                    events.push(eventData);
-                    localStorage.setItem('events', JSON.stringify(events));
-                    
-                    showMessage('events-message', '✅ Dados enviados com sucesso!', 'success');
-                    updateHeaderStats();
-                } else {
-                    const errorText = await response.text();
-                    showMessage('events-message', `❌ Erro: ${errorText}`, 'danger');
-                }
+                displayAllocation(response);
+                showMessage('allocation-results', 'allocationCalculated', 'success');
+                document.getElementById('allocation-results').style.display = 'block';
             } catch (error) {
-                showMessage('events-message', '❌ Erro de conexão', 'danger');
+                showMessage('allocation-results', 'allocationError', 'danger');
             }
-        });
+        }
         
-        document.getElementById('get-allocation-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const experimentId = document.getElementById('allocation-exp-id').value;
-            const windowDays = document.getElementById('window-days').value;
-            
-            try {
-                const response = await fetch(`${API_URL}/allocation?experiment_id=${experimentId}&window_days=${windowDays}`);
-                const data = await response.json();
-                
-                if (response.ok) {
-                    currentExperimentData = data;
-                    displayAllocation(data);
-                    updateMetrics(data);
-                    updateAnalysisCharts();
-                } else {
-                    alert('Erro ao buscar alocação: ' + (data.message || data.detail || 'Sem dados'));
-                }
-            } catch (error) {
-                alert('Erro de conexão com a API');
-            }
-        });
-        
-        // Display Allocation Results
+        // Display allocation results
         function displayAllocation(data) {
-            const container = document.getElementById('allocation-display');
-            const resultsDiv = document.getElementById('allocation-results');
+            const display = document.getElementById('allocation-display');
+            display.innerHTML = '';
             
-            container.innerHTML = '';
-            
-            if (data.allocations) {
-                Object.entries(data.allocations).forEach(([name, value]) => {
-                    const div = document.createElement('div');
-                    div.className = 'allocation-item';
-                    
-                    // Get stored events to calculate stats
-                    const events = JSON.parse(localStorage.getItem('events') || '[]');
-                    let totalImp = 0, totalClicks = 0;
-                    
-                    events.filter(e => e.experiment_id == data.experiment_id).forEach(event => {
-                        const variant = event.variants?.find(v => v.variant_name === name);
-                        if (variant) {
-                            totalImp += variant.impressions || 0;
-                            totalClicks += variant.clicks || 0;
-                        }
-                    });
-                    
-                    const ctr = totalImp > 0 ? ((totalClicks / totalImp) * 100).toFixed(2) : '0.00';
-                    
-                    div.innerHTML = `
-                        <div class="allocation-name">${name}</div>
-                        <div class="allocation-value">${(value * 100).toFixed(1)}%</div>
-                        <div class="allocation-stats">
-                            ${totalImp} imp | ${totalClicks} clicks | CTR: ${ctr}%
-                        </div>
-                    `;
-                    container.appendChild(div);
-                });
-            }
-            
-            resultsDiv.style.display = 'block';
-        }
-        
-        // Update Analysis Charts
-        function updateAnalysisCharts() {
-            if (!currentExperimentData) return;
-            
-            const events = JSON.parse(localStorage.getItem('events') || '[]');
-            const expEvents = events.filter(e => e.experiment_id == currentExperimentData.experiment_id);
-            
-            // Prepare data for charts
-            const dates = [...new Set(expEvents.map(e => e.date))].sort();
-            const variants = [...new Set(expEvents.flatMap(e => e.variants.map(v => v.variant_name)))];
-            
-            // Update CTR Chart
-            const ctrDatasets = variants.map((variant, index) => {
-                const data = dates.map(date => {
-                    const dayEvent = expEvents.find(e => e.date === date);
-                    const variantData = dayEvent?.variants.find(v => v.variant_name === variant);
-                    if (variantData && variantData.impressions > 0) {
-                        return (variantData.clicks / variantData.impressions * 100);
-                    }
-                    return 0;
-                });
-                
-                return {
-                    label: variant,
-                    data: data,
-                    borderColor: getColor(index),
-                    backgroundColor: getColor(index, 0.1),
-                    tension: 0.4
-                };
-            });
-            
-            charts.ctr.data.labels = dates;
-            charts.ctr.data.datasets = ctrDatasets;
-            charts.ctr.update();
-            
-            // Update Allocation Chart
-            if (currentExperimentData.history && currentExperimentData.history.length > 0) {
-                // Use API history data if available
-                const historyDates = currentExperimentData.history.map(h => h.date).reverse();
-                const allocationDatasets = variants.map((variant, index) => {
-                    const data = currentExperimentData.history.map(h => {
-                        const allocation = h.allocations[variant];
-                        return allocation ? (allocation * 100) : 0;
-                    }).reverse();
-                    
-                    return {
-                        label: variant,
-                        data: data,
-                        borderColor: getColor(index),
-                        backgroundColor: getColor(index, 0.1),
-                        tension: 0.4
-                    };
-                });
-                
-                charts.allocation.data.labels = historyDates;
-                charts.allocation.data.datasets = allocationDatasets;
-            } else {
-                // Fallback: simulate allocation evolution based on CTR performance
-                const allocationDatasets = variants.map((variant, index) => {
-                    const data = dates.map((date, dateIndex) => {
-                        // Calculate cumulative CTR up to this date
-                        let cumulativeImpressions = 0;
-                        let cumulativeClicks = 0;
-                        
-                        for (let i = 0; i <= dateIndex; i++) {
-                            const dayEvent = expEvents.find(e => e.date === dates[i]);
-                            const variantData = dayEvent?.variants.find(v => v.variant_name === variant);
-                            if (variantData) {
-                                cumulativeImpressions += variantData.impressions || 0;
-                                cumulativeClicks += variantData.clicks || 0;
-                            }
-                        }
-                        
-                        const ctr = cumulativeImpressions > 0 ? cumulativeClicks / cumulativeImpressions : 0;
-                        
-                        // Calculate relative performance vs other variants
-                        const allVariantCTRs = variants.map(v => {
-                            let vImpressions = 0;
-                            let vClicks = 0;
-                            for (let i = 0; i <= dateIndex; i++) {
-                                const dayEvent = expEvents.find(e => e.date === dates[i]);
-                                const vData = dayEvent?.variants.find(vd => vd.variant_name === v);
-                                if (vData) {
-                                    vImpressions += vData.impressions || 0;
-                                    vClicks += vData.clicks || 0;
-                                }
-                            }
-                            return vImpressions > 0 ? vClicks / vImpressions : 0;
-                        });
-                        
-                        const totalCTR = allVariantCTRs.reduce((sum, c) => sum + c, 0);
-                        if (totalCTR === 0) return 50; // Equal allocation if no data
-                        
-                        // Simulate Thompson Sampling allocation
-                        const baseAllocation = (ctr / totalCTR) * 100;
-                        const minAllocation = 10; // Minimum 10% allocation
-                        const maxAllocation = 80; // Maximum 80% allocation
-                        
-                        return Math.max(minAllocation, Math.min(maxAllocation, baseAllocation));
-                    });
-                    
-                    return {
-                        label: variant,
-                        data: data,
-                        borderColor: getColor(index),
-                        backgroundColor: getColor(index, 0.1),
-                        tension: 0.4
-                    };
-                });
-                
-                charts.allocation.data.labels = dates;
-                charts.allocation.data.datasets = allocationDatasets;
-            }
-            charts.allocation.update();
-            
-            // Update Confidence Chart
-            const confidenceData = variants.map(variant => {
-                let totalImp = 0, totalClicks = 0;
-                expEvents.forEach(event => {
-                    const v = event.variants?.find(v => v.variant_name === variant);
-                    if (v) {
-                        totalImp += v.impressions || 0;
-                        totalClicks += v.clicks || 0;
-                    }
-                });
-                return totalImp > 0 ? (totalClicks / totalImp * 100) : 0;
-            });
-            
-            charts.confidence.data.labels = variants;
-            charts.confidence.data.datasets[0].data = confidenceData;
-            charts.confidence.update();
-            
-            // Update Results Table
-            updateResultsTable(expEvents, currentExperimentData.allocations);
-            
-            // Calculate and update regret
-            calculateRegret(expEvents);
-        }
-        
-        // Update Results Table
-        function updateResultsTable(events, allocations) {
-            const tbody = document.getElementById('results-table');
-            tbody.innerHTML = '';
-            
-            events.forEach(event => {
-                event.variants.forEach(variant => {
-                    const row = tbody.insertRow();
-                    row.innerHTML = `
-                        <td>${event.date}</td>
-                        <td>${variant.variant_name}</td>
-                        <td>${variant.impressions}</td>
-                        <td>${variant.clicks}</td>
-                        <td>${variant.impressions > 0 ? ((variant.clicks / variant.impressions) * 100).toFixed(2) : '0.00'}%</td>
-                        <td>${allocations && allocations[variant.variant_name] ? (allocations[variant.variant_name] * 100).toFixed(1) : '-'}%</td>
-                    `;
-                });
+            Object.entries(data.allocation).forEach(([variant, allocation]) => {
+                const stats = data.variant_stats[variant];
+                const item = document.createElement('div');
+                item.className = 'allocation-item';
+                item.innerHTML = `
+                    <div class="allocation-name">${variant}</div>
+                    <div class="allocation-value">${(allocation * 100).toFixed(1)}%</div>
+                    <div class="allocation-stats">
+                        CTR: ${(stats.ctr * 100).toFixed(2)}%<br>
+                        ${messages[currentLanguage].conversions}: ${stats.conversions}
+                    </div>
+                `;
+                display.appendChild(item);
             });
         }
         
-        // Calculate Regret
-        function calculateRegret(events) {
-            // Find best CTR
-            let bestCTR = 0;
-            const variantStats = {};
-            
-            events.forEach(event => {
-                event.variants.forEach(v => {
-                    if (!variantStats[v.variant_name]) {
-                        variantStats[v.variant_name] = { impressions: 0, clicks: 0 };
-                    }
-                    variantStats[v.variant_name].impressions += v.impressions;
-                    variantStats[v.variant_name].clicks += v.clicks;
-                });
-            });
-            
-            Object.values(variantStats).forEach(stats => {
-                if (stats.impressions > 0) {
-                    const ctr = stats.clicks / stats.impressions;
-                    if (ctr > bestCTR) bestCTR = ctr;
+        // Handle file selection
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const fileName = file.name;
+                const fileInfo = document.createElement('small');
+                fileInfo.style.color = '#666';
+                fileInfo.style.marginTop = '0.5rem';
+                fileInfo.style.display = 'block';
+                fileInfo.textContent = `${fileName} ${messages[currentLanguage].fileSelected}`;
+                
+                const existingInfo = event.target.parentElement.querySelector('small:last-child');
+                if (existingInfo && existingInfo !== event.target.nextElementSibling) {
+                    existingInfo.remove();
                 }
-            });
-            
-            // Calculate cumulative regret
-            let cumulativeRegret = 0;
-            const regretData = [];
-            
-            events.forEach((event, index) => {
-                let dayRegret = 0;
-                event.variants.forEach(v => {
-                    if (v.impressions > 0) {
-                        const variantCTR = v.clicks / v.impressions;
-                        dayRegret += v.impressions * (bestCTR - variantCTR);
-                    }
-                });
-                cumulativeRegret += dayRegret;
-                regretData.push(cumulativeRegret);
-            });
-            
-            // Update regret chart
-            charts.regret.data.labels = events.map((e, i) => `Dia ${i + 1}`);
-            charts.regret.data.datasets[0].data = regretData;
-            charts.regret.update();
-            
-            // Update regret metric
-            document.getElementById('regret-value').textContent = Math.round(cumulativeRegret);
-        }
-        
-        // Update Metrics
-        function updateMetrics(data) {
-            // Find best variant from stored events
-            const events = JSON.parse(localStorage.getItem('events') || '[]');
-            const expEvents = events.filter(e => e.experiment_id == data.experiment_id);
-            
-            const variantStats = {};
-            expEvents.forEach(event => {
-                event.variants.forEach(v => {
-                    if (!variantStats[v.variant_name]) {
-                        variantStats[v.variant_name] = { impressions: 0, clicks: 0 };
-                    }
-                    variantStats[v.variant_name].impressions += v.impressions;
-                    variantStats[v.variant_name].clicks += v.clicks;
-                });
-            });
-            
-            let bestVariant = '-';
-            let bestCTR = 0;
-            
-            Object.entries(variantStats).forEach(([name, stats]) => {
-                if (stats.impressions > 0) {
-                    const ctr = stats.clicks / stats.impressions;
-                    if (ctr > bestCTR) {
-                        bestCTR = ctr;
-                        bestVariant = name;
-                    }
-                }
-            });
-            
-            document.getElementById('best-variant').textContent = bestVariant;
-            
-            // Calculate confidence based on sample size
-            const totalImpressions = Object.values(variantStats).reduce((sum, s) => sum + s.impressions, 0);
-            const confidence = Math.min(95, 50 + Math.sqrt(totalImpressions / 100));
-            document.getElementById('confidence-level').textContent = confidence.toFixed(0) + '%';
-            
-            // Calculate convergence rate
-            if (data.allocations && bestVariant !== '-') {
-                const bestAllocation = data.allocations[bestVariant] || 0;
-                const convergence = bestAllocation * 100;
-                document.getElementById('convergence-rate').textContent = convergence.toFixed(0) + '%';
+                event.target.parentElement.appendChild(fileInfo);
             }
         }
         
-        // Run Simulation
-        function runSimulation() {
-            const days = parseInt(document.getElementById('sim-days').value);
-            const impressionsPerDay = parseInt(document.getElementById('sim-impressions').value);
-            const ctrControl = parseFloat(document.getElementById('sim-ctr-control').value) / 100;
-            const ctrVariant = parseFloat(document.getElementById('sim-ctr-variant').value) / 100;
-            
-            // Simple simulation
-            const results = [];
-            let controlAlloc = 0.5;
-            let variantAlloc = 0.5;
-            let totalRegret = 0;
-            
-            for (let day = 1; day <= days; day++) {
-                // Simulate clicks
-                const controlClicks = Math.round(impressionsPerDay * controlAlloc * ctrControl);
-                const variantClicks = Math.round(impressionsPerDay * variantAlloc * ctrVariant);
-                
-                // Calculate regret (opportunity cost)
-                const optimalClicks = impressionsPerDay * Math.max(ctrControl, ctrVariant);
-                const actualClicks = controlClicks + variantClicks;
-                totalRegret += optimalClicks - actualClicks;
-                
-                // Update allocation (simplified Thompson Sampling)
-                const controlSuccess = controlClicks / (impressionsPerDay * controlAlloc);
-                const variantSuccess = variantClicks / (impressionsPerDay * variantAlloc);
-                
-                if (variantSuccess > controlSuccess) {
-                    variantAlloc = Math.min(0.9, variantAlloc + 0.02);
-                    controlAlloc = 1 - variantAlloc;
-                }
-                
-                results.push({
-                    day,
-                    controlAlloc: controlAlloc * 100,
-                    variantAlloc: variantAlloc * 100,
-                    regret: totalRegret
-                });
-            }
-            
-            // Display simulation results
-            displaySimulationResults(results);
-        }
-        
-        // Display Simulation Results
-        function displaySimulationResults(results) {
-            document.getElementById('simulation-results').style.display = 'block';
-            
-            // Create or update simulation charts
-            const days = results.map(r => `Dia ${r.day}`);
-            const controlAllocs = results.map(r => r.controlAlloc);
-            const variantAllocs = results.map(r => r.variantAlloc);
-            const regrets = results.map(r => r.regret);
-            
-            // Allocation evolution chart
-            const allocCtx = document.getElementById('simulation-allocation-chart').getContext('2d');
-            if (charts.simAllocation) charts.simAllocation.destroy();
-            
-            charts.simAllocation = new Chart(allocCtx, {
-                type: 'line',
-                data: {
-                    labels: days,
-                    datasets: [
-                        {
-                            label: 'Control',
-                            data: controlAllocs,
-                            borderColor: '#3498db',
-                            backgroundColor: 'rgba(52, 152, 219, 0.1)',
-                            tension: 0.4
-                        },
-                        {
-                            label: 'Variant B',
-                            data: variantAllocs,
-                            borderColor: '#2ecc71',
-                            backgroundColor: 'rgba(46, 204, 113, 0.1)',
-                            tension: 0.4
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 100,
-                            ticks: { callback: value => value + '%' }
-                        }
-                    }
-                }
-            });
-            
-            // Regret chart
-            const regretCtx = document.getElementById('simulation-regret-chart').getContext('2d');
-            if (charts.simRegret) charts.simRegret.destroy();
-            
-            charts.simRegret = new Chart(regretCtx, {
-                type: 'line',
-                data: {
-                    labels: days,
-                    datasets: [{
-                        label: 'Regret Acumulado',
-                        data: regrets,
-                        borderColor: '#e74c3c',
-                        backgroundColor: 'rgba(231, 76, 60, 0.1)',
-                        tension: 0.4,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false
-                }
-            });
-        }
-        
-        // Save Settings
-        function saveSettings() {
-            const settings = {
-                alphaPrior: document.getElementById('alpha-prior').value,
-                betaPrior: document.getElementById('beta-prior').value,
-                minExplore: document.getElementById('min-explore').value,
-                controlFloor: document.getElementById('control-floor').value
-            };
-            
-            localStorage.setItem('bandit-settings', JSON.stringify(settings));
-            showMessage('settings-message', '✅ Configurações salvas!', 'success');
-        }
-        
-        
-        // Utility function to get colors
-        function getColor(index, alpha = 1) {
-            const colors = [
-                `rgba(74, 144, 226, ${alpha})`,   // Blue
-                `rgba(46, 204, 113, ${alpha})`,   // Green
-                `rgba(231, 76, 60, ${alpha})`,    // Red
-                `rgba(155, 89, 182, ${alpha})`,   // Purple
-                `rgba(241, 196, 15, ${alpha})`    // Yellow
-            ];
-            return colors[index % colors.length];
-        }
-        
-        // Utility function to show messages
-        function showMessage(elementId, message, type) {
-            const element = document.getElementById(elementId);
-            element.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
-            setTimeout(() => {
-                element.innerHTML = '';
-            }, 5000);
-        }
-
-        // Download Template Function
-        async function downloadTemplate() {
-            try {
-                const response = await fetch(`${API_URL}/download-template`);
-                if (response.ok) {
-                    const blob = await response.blob();
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.style.display = 'none';
-                    a.href = url;
-                    a.download = 'modelo_dados_bandit.csv';
-                    document.body.appendChild(a);
-                    a.click();
-                    window.URL.revokeObjectURL(url);
-                    document.body.removeChild(a);
-                } else {
-                    alert('❌ Erro ao baixar modelo de dados');
-                }
-            } catch (error) {
-                console.error('Erro ao baixar template:', error);
-                alert('❌ Erro de conexão ao baixar modelo');
-            }
-        }
-        
-        // Upload Form Handler
-        document.getElementById('upload-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
+        // Upload CSV function
+        async function uploadCSV(event) {
+            event.preventDefault();
             
             const fileInput = document.getElementById('csv-file');
             const file = fileInput.files[0];
             
             if (!file) {
-                showMessage('upload-message', '❌ Por favor, selecione um arquivo CSV', 'danger');
-                return;
-            }
-            
-            if (!file.name.endsWith('.csv')) {
-                showMessage('upload-message', '❌ Apenas arquivos CSV são aceitos', 'danger');
+                showMessage('upload-message', 'selectFile', 'warning');
                 return;
             }
             
@@ -1699,9 +1251,9 @@
             formData.append('file', file);
             
             try {
-                showMessage('upload-message', '⏳ Processando arquivo...', 'warning');
+                showMessage('upload-message', 'processingUpload', 'info');
                 
-                const response = await fetch(`${API_URL}/upload-data`, {
+                const response = await fetch(`${apiBaseUrl}/upload-csv/`, {
                     method: 'POST',
                     body: formData
                 });
@@ -1709,127 +1261,198 @@
                 const result = await response.json();
                 
                 if (response.ok) {
-                    // Show success message
-                    showMessage('upload-message', 
-                        `✅ Upload concluído! ${result.processed_rows} linhas processadas de ${result.total_rows} total`, 
-                        'success'
-                    );
-                    
-                    // Display detailed results
+                    showMessage('upload-message', 'uploadSuccess', 'success');
                     displayUploadResults(result);
-                    
-                    // Update header stats
-                    updateHeaderStats();
-                    
-                    // Clear file input
-                    fileInput.value = '';
-                    
+                    loadDashboardData();
                 } else {
-                    showMessage('upload-message', 
-                        `❌ Erro no upload: ${result.detail || 'Erro desconhecido'}`, 
-                        'danger'
-                    );
+                    showMessage('upload-message', result.detail || 'uploadError', 'danger');
                 }
-                
             } catch (error) {
-                console.error('Erro no upload:', error);
-                showMessage('upload-message', '❌ Erro de conexão durante upload', 'danger');
+                showMessage('upload-message', 'uploadError', 'danger');
             }
-        });
+        }
         
-        // Display Upload Results
+        // Display upload results
         function displayUploadResults(result) {
             const resultsDiv = document.getElementById('upload-results');
             const summaryDiv = document.getElementById('upload-summary');
             const errorsDiv = document.getElementById('upload-errors');
             
-            // Show results section
-            resultsDiv.style.display = 'block';
-            
-            // Summary
-            const successRate = result.total_rows > 0 ? 
-                ((result.processed_rows / result.total_rows) * 100).toFixed(1) : 0;
-            
             summaryDiv.innerHTML = `
-                <div class="alert alert-${result.status === 'success' ? 'success' : 'warning'}">
-                    <h4>📊 Resumo do Upload</h4>
-                    <p><strong>Linhas processadas:</strong> ${result.processed_rows} de ${result.total_rows} (${successRate}%)</p>
-                    <p><strong>Status:</strong> ${result.status === 'success' ? '✅ Sucesso' : '⚠️ Parcial'}</p>
-                    ${result.total_errors > 0 ? `<p><strong>Erros encontrados:</strong> ${result.total_errors}</p>` : ''}
+                <div class="alert alert-info">
+                    <strong>${messages[currentLanguage].uploadComplete}</strong><br>
+                    ${result.total_rows} ${messages[currentLanguage].rowsProcessed}<br>
+                    ${result.successful_rows} ${messages[currentLanguage].rowsSuccess}<br>
+                    ${result.error_rows} ${messages[currentLanguage].rowsErrors}
                 </div>
             `;
             
-            // Errors
             if (result.errors && result.errors.length > 0) {
                 errorsDiv.innerHTML = `
-                    <div class="alert alert-danger">
-                        <h4>❌ Erros Encontrados</h4>
-                        <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
+                    <div class="alert alert-warning">
+                        <strong>${messages[currentLanguage].validationErrors}</strong>
+                        <ul style="margin-top: 0.5rem;">
                             ${result.errors.map(error => `<li>${error}</li>`).join('')}
                         </ul>
-                        ${result.total_errors > result.errors.length ? 
-                            `<p><small>... e mais ${result.total_errors - result.errors.length} erros</small></p>` : 
-                            ''
-                        }
                     </div>
                 `;
             } else {
                 errorsDiv.innerHTML = '';
             }
+            
+            resultsDiv.style.display = 'block';
         }
         
-        // Reset All Data
-        async function resetAllData() {
-            if (confirm('⚠️ Isso irá apagar TODOS os dados salvos. Tem certeza?')) {
-                try {
-                    // Clear API data
-                    const res = await fetch(`${API_URL}/reset_data`, {
-                        method: 'POST'
-                    });
-                    const data = await res.json();
-                    if (res.ok) {
-                        // Clear localStorage
-                        localStorage.removeItem('experiments');
-                        localStorage.removeItem('events');
-                        localStorage.removeItem('bandit-settings');
-                        
-                        // Reset header stats to zero
-                        document.getElementById('total-experiments').textContent = '0';
-                        document.getElementById('total-impressions').textContent = '0';
-                        document.getElementById('avg-ctr').textContent = '0%';
-                        
-                        // Reset metrics cards
-                        document.getElementById('best-variant').textContent = '-';
-                        document.getElementById('confidence-level').textContent = '-';
-                        document.getElementById('regret-value').textContent = '0';
-                        document.getElementById('convergence-rate').textContent = '0%';
-                        
-                        // Clear all displays
-                        document.getElementById('allocation-results').style.display = 'none';
-                        document.getElementById('results-table').innerHTML = '<tr><td colspan="6" style="text-align: center;">Nenhum dado disponível</td></tr>';
-                        
-                        // Reset charts
-                        Object.values(charts).forEach(chart => {
-                            if (chart && chart.data) {
-                                chart.data.labels = [];
-                                chart.data.datasets.forEach(dataset => {
-                                    dataset.data = [];
-                                });
-                                chart.update();
-                            }
-                        });
-                        
-                        // Clear current experiment data
-                        currentExperimentData = null;
-                        
-                        alert('✅ Todos os dados foram limpos!');
-                    } else {
-                        alert(`❌ Erro ao limpar dados: ${data.detail || 'Erro desconhecido'}`);
-                    }
-                } catch (error) {
-                    alert('❌ Erro de conexão com a API.');
-                }
+        // Load sample data function
+        function loadSampleData() {
+            document.getElementById('csv-file').click();
+        }
+        
+        // Download template function
+        function downloadTemplate() {
+            const csvContent = `experiment_id,date,variant_name,impressions,clicks,conversions
+1,2024-01-01,Control,1000,70,35
+1,2024-01-01,Variant A,1000,85,45
+1,2024-01-01,Variant B,1000,92,50`;
+            
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'modelo_dados_bandit.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+        
+        // Save API configuration
+        function saveApiConfig(event) {
+            event.preventDefault();
+            
+            const newApiUrl = document.getElementById('api-base-url').value;
+            const timeout = document.getElementById('api-timeout').value;
+            
+            localStorage.setItem('api-base-url', newApiUrl);
+            localStorage.setItem('api-timeout', timeout);
+            apiBaseUrl = newApiUrl;
+            
+            showMessage('api-config-message', 'settingsSaved', 'success');
+        }
+        
+        // Apply display preferences
+        function applyDisplayPreferences(event) {
+            event.preventDefault();
+            
+            const newTheme = document.getElementById('theme-select').value;
+            const newLanguage = document.getElementById('language-select').value;
+            const autoRefresh = document.getElementById('auto-refresh').value;
+            
+            // Apply theme
+            if (newTheme !== currentTheme) {
+                currentTheme = newTheme;
+                localStorage.setItem('dashboard-theme', currentTheme);
+                document.body.setAttribute('data-theme', currentTheme);
+                updateThemeIcon();
             }
+            
+            // Apply language
+            if (newLanguage !== currentLanguage) {
+                currentLanguage = newLanguage;
+                localStorage.setItem('dashboard-language', currentLanguage);
+                updateLanguage();
+            }
+            
+            // Setup auto refresh
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+                autoRefreshInterval = null;
+            }
+            
+            if (autoRefresh > 0) {
+                autoRefreshInterval = setInterval(loadDashboardData, autoRefresh * 1000);
+            }
+            
+            showMessage('display-preferences-message', 'preferencesApplied', 'success');
+        }
+        
+        // Test API connection
+        async function testConnection() {
+            try {
+                await apiRequest('/health');
+                showMessage('data-management-message', 'connectionSuccess', 'success');
+            } catch (error) {
+                showMessage('data-management-message', 'connectionError', 'danger');
+            }
+        }
+        
+        // Export all data
+        async function exportAllData() {
+            try {
+                const experiments = await apiRequest('/experiments/');
+                const dataStr = JSON.stringify(experiments, null, 2);
+                const blob = new Blob([dataStr], { type: 'application/json' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `bandit_data_${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                
+                showMessage('data-management-message', 'dataExported', 'success');
+            } catch (error) {
+                showMessage('data-management-message', 'error', 'danger');
+            }
+        }
+        
+        // Clear local cache
+        function clearAllData() {
+            if (confirm(messages[currentLanguage].confirmClear)) {
+                localStorage.clear();
+                showMessage('data-management-message', 'cacheCleared', 'success');
+                setTimeout(() => location.reload(), 1000);
+            }
+        }
+        
+        // Reset dashboard
+        function resetDashboard() {
+            if (confirm(messages[currentLanguage].confirmReset)) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+        
+        // Load dashboard data
+        async function loadDashboardData() {
+            try {
+                // Load experiments and update stats
+                const experiments = await apiRequest('/experiments/');
+                updateDashboardStats(experiments);
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+        
+        // Update dashboard statistics
+        function updateDashboardStats(experiments) {
+            document.getElementById('total-experiments').textContent = experiments.length;
+            // Add more stats calculations here
+        }
+        
+        // Run simulation
+        function runSimulation() {
+            const days = parseInt(document.getElementById('sim-days').value);
+            const impressions = parseInt(document.getElementById('sim-impressions').value);
+            const ctrControl = parseFloat(document.getElementById('sim-ctr-control').value) / 100;
+            const ctrVariant = parseFloat(document.getElementById('sim-ctr-variant').value) / 100;
+            
+            // Simulation logic would go here
+            document.getElementById('simulation-results').style.display = 'block';
+            
+            // This is a placeholder - actual simulation would involve Thompson Sampling
+            console.log('Running simulation with:', { days, impressions, ctrControl, ctrVariant });
         }
     </script>
 </body>
