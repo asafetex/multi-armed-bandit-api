@@ -7,7 +7,7 @@ from fastapi import FastAPI, HTTPException, Depends, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, FileResponse
 from sqlalchemy.orm import Session
-from sqlalchemy import func, text
+from sqlalchemy import func, text, Integer
 from typing import List
 import uvicorn
 import os
@@ -322,17 +322,49 @@ async def get_allocation(
     end_date = datetime.now(timezone.utc).date()
     start_date = end_date - timedelta(days=window_days)
 
-    metrics = db.query(
-        DailyMetric.variant_name,
-        func.sum(DailyMetric.impressions).label('impressions'),
-        func.sum(DailyMetric.clicks).label('clicks'),
-        func.sum(DailyMetric.conversions).label('conversions')
-    ).filter(
-        DailyMetric.experiment_id == experiment_id,
-        DailyMetric.date >= start_date,
-        DailyMetric.date <= end_date
-    ).group_by(DailyMetric.variant_name
-    ).having(func.sum(DailyMetric.impressions) > 0).all()
+    logger.info(f"Querying metrics for experiment {experiment_id}, date range: {start_date} to {end_date}")
+
+    try:
+        # Cast to avoid PostgreSQL type issues
+        metrics = db.query(
+            DailyMetric.variant_name,
+            func.sum(func.cast(DailyMetric.impressions, Integer)).label('impressions'),
+            func.sum(func.cast(DailyMetric.clicks, Integer)).label('clicks'),
+            func.sum(func.cast(DailyMetric.conversions, Integer)).label('conversions')
+        ).filter(
+            DailyMetric.experiment_id == experiment_id,
+            DailyMetric.date >= start_date,
+            DailyMetric.date <= end_date
+        ).group_by(DailyMetric.variant_name
+        ).having(func.sum(func.cast(DailyMetric.impressions, Integer)) > 0).all()
+        
+        logger.info(f"Found {len(metrics)} variant metrics for experiment {experiment_id}")
+        for m in metrics:
+            logger.info(f"  {m.variant_name}: {m.impressions} impressions, {m.clicks} clicks, {m.conversions} conversions")
+        
+    except Exception as e:
+        logger.error(f"Error querying metrics for experiment {experiment_id}: {str(e)}")
+        # Try simpler query as fallback
+        try:
+            logger.info("Trying fallback query without casting...")
+            metrics = db.query(
+                DailyMetric.variant_name,
+                func.sum(DailyMetric.impressions).label('impressions'),
+                func.sum(DailyMetric.clicks).label('clicks'),
+                func.sum(DailyMetric.conversions).label('conversions')
+            ).filter(
+                DailyMetric.experiment_id == experiment_id,
+                DailyMetric.date >= start_date,
+                DailyMetric.date <= end_date
+            ).group_by(DailyMetric.variant_name).all()
+            
+            # Filter out zero impressions in Python instead of SQL
+            metrics = [m for m in metrics if (m.impressions or 0) > 0]
+            logger.info(f"Fallback query successful: {len(metrics)} variants found")
+            
+        except Exception as e2:
+            logger.error(f"Fallback query also failed: {str(e2)}")
+            raise HTTPException(status_code=500, detail=f"Database query error: {str(e)}")
 
     # 3. Diagnóstico para dados insuficientes
     if not metrics or len(metrics) < 2:
@@ -376,18 +408,29 @@ async def get_allocation(
     # 6. Salva a alocação no histórico
     from app.models import Allocation
     target_date = datetime.now(timezone.utc).date()
-    db_allocation = Allocation(
-        experiment_id=experiment_id,
-        target_date=target_date,
-        algorithm="thompson_sampling",
-        allocations=allocations,
-        window_days=window_days,
-        total_impressions=sum(v["impressions"] for v in variant_data),
-        total_clicks=sum(v["clicks"] for v in variant_data)
-    )
-    db.add(db_allocation)
-    db.commit()
-    db.refresh(db_allocation)
+    
+    # Convert allocations to ensure JSON compatibility across databases
+    allocations_json = dict(allocations) if allocations else {}
+    
+    try:
+        db_allocation = Allocation(
+            experiment_id=experiment_id,
+            target_date=target_date,
+            algorithm="thompson_sampling",
+            allocations=allocations_json,
+            window_days=window_days,
+            total_impressions=sum(v["impressions"] for v in variant_data),
+            total_clicks=sum(v["clicks"] for v in variant_data)
+        )
+        db.add(db_allocation)
+        db.commit()
+        db.refresh(db_allocation)
+        logger.info(f"Allocation saved successfully for experiment {experiment_id}")
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Failed to save allocation for experiment {experiment_id}: {str(e)}")
+        # Continue without saving allocation to avoid breaking the endpoint
+        logger.warning("Continuing without saving allocation to database")
 
     # 7. Busca histórico recente
     history = db.query(Allocation).filter(
