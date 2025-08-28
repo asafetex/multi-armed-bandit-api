@@ -365,6 +365,34 @@ async def get_allocation_history(
         ]
     }
 
+@app.post("/migrate_database")
+async def migrate_database(db: Session = Depends(get_db)):
+    """Manually run database migrations"""
+    try:
+        # Read and execute the init.sql file
+        import os
+        sql_file_path = os.path.join("scripts", "init.sql")
+        
+        if os.path.exists(sql_file_path):
+            with open(sql_file_path, 'r', encoding='utf-8') as f:
+                sql_content = f.read()
+            
+            # Execute the SQL commands
+            db.execute(text(sql_content))
+            db.commit()
+            
+            return {"message": "✅ Database migrated successfully!", "status": "success"}
+        else:
+            # Fallback: create tables using SQLAlchemy
+            Base.metadata.create_all(bind=engine)
+            db.commit()
+            return {"message": "✅ Database tables created using SQLAlchemy!", "status": "success"}
+            
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Database migration failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Migration failed: {str(e)}")
+
 @app.post("/reset_data")
 async def reset_data(db: Session = Depends(get_db)):
     """Resets all data in the database"""
