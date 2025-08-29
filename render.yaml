@@ -1,27 +1,94 @@
+# Render Build Configuration
+# https://render.com/docs/yaml-spec
+
 services:
+  # Web Service - Multi-Armed Bandit API
   - type: web
     name: multi-armed-bandit-api
-    env: python
-    buildCommand: pip install --upgrade pip setuptools wheel && pip install -r requirements.txt
-    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    runtime: python
+    plan: free
+    
+    # GitHub repository configuration
+    repo: https://github.com/asafetex/multi-armed-bandit-api
+    branch: main
+    
+    # Build configuration
+    buildCommand: |
+      pip install --upgrade pip setuptools wheel
+      pip install -r requirements.txt
+    
+    # Start command
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 1
+    
+    # Health check endpoint
+    healthCheckPath: /health
+    
+    # Environment variables
     envVars:
       - key: DATABASE_URL
         fromDatabase:
           name: bandit-postgres
           property: connectionString
+      
       - key: PYTHON_VERSION
         value: "3.11.0"
+      
       - key: DEBUG
         value: "False"
+      
       - key: ENVIRONMENT
-        value: "production"
+        value: production
+      
       - key: PORT
-        value: "10000"
+        generateValue: true
+      
       - key: PYTHONPATH
-        value: "."
+        value: .
+      
+      # Algorithm configuration
+      - key: DEFAULT_WINDOW_DAYS
+        value: "14"
+      
+      - key: MIN_IMPRESSIONS_FOR_OPTIMIZATION
+        value: "1000"
+      
+      # Thompson Sampling parameters
+      - key: ALPHA_PRIOR
+        value: "1.0"
+      
+      - key: BETA_PRIOR
+        value: "1.0"
+      
+      - key: MIN_EXPLORE_RATE
+        value: "0.05"
+      
+      - key: CONTROL_FLOOR
+        value: "0.1"
+      
+      - key: MAX_DAILY_SHIFT
+        value: "0.2"
+    
+    # Auto-deploy configuration
+    autoDeploy: true
+    
+    # Region (optional - Render will auto-select)
+    # region: oregon
 
+# Database configuration
 databases:
   - name: bandit-postgres
+    plan: free
+    
+    # PostgreSQL configuration
     databaseName: bandit_db
     user: bandit_user
-    plan: free
+    
+    # PostgreSQL version
+    postgresMajorVersion: 15
+    
+    # IP Allow List (optional - leave empty for all IPs)
+    ipAllowList: []
+    
+    # Backup configuration (for paid plans)
+    # backupSchedule: "@daily"
+    # backupRetentionDays: 7
