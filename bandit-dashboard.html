@@ -1866,6 +1866,7 @@
             let bestScore = 0;
             let totalRegret = 0;
             let variantPerformance = {};
+            let totalImpressions = 0;
             
             experiments.forEach(function(exp) {
                 if (exp.metrics && exp.metrics.length > 0) {
@@ -1880,28 +1881,79 @@
                         variantPerformance[metric.variant_name].impressions += metric.impressions;
                         variantPerformance[metric.variant_name].clicks += metric.clicks;
                         variantPerformance[metric.variant_name].conversions += metric.conversions || 0;
+                        totalImpressions += metric.impressions;
                     });
                 }
             });
             
-            // Encontrar a melhor variante baseada em CTR * Taxa de Conversão
+            // Encontrar a melhor variante baseada em CTR * Taxa de Conversão (valor esperado)
+            let bestExpectedValue = 0;
             Object.keys(variantPerformance).forEach(function(variantName) {
                 const perf = variantPerformance[variantName];
                 const ctr = perf.impressions > 0 ? perf.clicks / perf.impressions : 0;
                 const convRate = perf.clicks > 0 ? perf.conversions / perf.clicks : 0;
-                const combinedScore = ctr * convRate;
+                const expectedValue = ctr * convRate; // Valor esperado por impressão
                 
-                if (combinedScore > bestScore) {
-                    bestScore = combinedScore;
+                if (expectedValue > bestScore) {
+                    bestScore = expectedValue;
                     bestVariant = variantName;
+                    bestExpectedValue = expectedValue;
                 }
             });
             
-            // Calcular confiança estatística (aproximada)
-            const totalVariants = Object.keys(variantPerformance).length;
-            let confidence = totalVariants > 1 ? Math.min(95, 60 + (bestScore * 1000)) : 0;
+            // Calcular Regret Acumulado
+            // Regret = diferença entre valor ótimo e valor real obtido
+            Object.keys(variantPerformance).forEach(function(variantName) {
+                const perf = variantPerformance[variantName];
+                const ctr = perf.impressions > 0 ? perf.clicks / perf.impressions : 0;
+                const convRate = perf.clicks > 0 ? perf.conversions / perf.clicks : 0;
+                const actualValue = ctr * convRate;
+                
+                // Regret para esta variante = (melhor valor - valor atual) * impressões
+                const regretForVariant = (bestExpectedValue - actualValue) * perf.impressions;
+                totalRegret += Math.max(0, regretForVariant); // Só somar regret positivo
+            });
             
-            // Calcular taxa de convergência baseada na diferença entre variantes
+            // Converter regret para percentage do total de valor possível
+            const regretPercentage = totalImpressions > 0 ? (totalRegret / (bestExpectedValue * totalImpressions)) * 100 : 0;
+            
+            // Calcular confiança estatística usando Interval de Confiança
+            const totalVariants = Object.keys(variantPerformance).length;
+            let confidence = 0;
+            if (totalVariants > 1 && bestVariant !== '-') {
+                const bestPerf = variantPerformance[bestVariant];
+                const bestCTR = bestPerf.impressions > 0 ? bestPerf.clicks / bestPerf.impressions : 0;
+                const bestConv = bestPerf.clicks > 0 ? bestPerf.conversions / bestPerf.clicks : 0;
+                
+                // Calcular intervalo de confiança usando aproximação normal
+                const n = bestPerf.impressions;
+                if (n > 30) { // Amostra grande o suficiente
+                    const p = bestCTR;
+                    const z = 1.96; // 95% confiança
+                    const marginError = z * Math.sqrt((p * (1 - p)) / n);
+                    const lowerBound = p - marginError;
+                    
+                    // Confiança baseada na diferença estatisticamente significativa
+                    const secondBestScore = Math.max(...Object.keys(variantPerformance)
+                        .filter(v => v !== bestVariant)
+                        .map(v => {
+                            const perf = variantPerformance[v];
+                            const ctr = perf.impressions > 0 ? perf.clicks / perf.impressions : 0;
+                            const convRate = perf.clicks > 0 ? perf.conversions / perf.clicks : 0;
+                            return ctr * convRate;
+                        }));
+                    
+                    if (lowerBound > secondBestScore) {
+                        confidence = Math.min(99, 70 + (n / 100)); // Aumenta com tamanho da amostra
+                    } else {
+                        confidence = Math.max(50, 50 + ((bestScore - secondBestScore) * 1000));
+                    }
+                } else {
+                    confidence = Math.min(75, 30 + (bestScore * 500)); // Confiança baixa para amostras pequenas
+                }
+            }
+            
+            // Calcular taxa de convergência baseada na estabilidade das diferenças
             let convergenceRate = 0;
             if (totalVariants > 1) {
                 const scores = Object.values(variantPerformance).map(p => {
@@ -1910,14 +1962,20 @@
                     return ctr * convRate;
                 });
                 const maxScore = Math.max(...scores);
+                const minScore = Math.min(...scores);
                 const avgScore = scores.reduce((a, b) => a + b, 0) / scores.length;
-                convergenceRate = maxScore > 0 ? (avgScore / maxScore) * 100 : 0;
+                
+                // Convergência baseada na variabilidade relativa
+                if (maxScore > 0) {
+                    const variability = (maxScore - minScore) / maxScore;
+                    convergenceRate = Math.max(0, 100 - (variability * 100));
+                }
             }
             
             // Atualizar os cards
             document.getElementById('best-variant').textContent = bestVariant;
             document.getElementById('confidence-level').textContent = confidence.toFixed(1) + '%';
-            document.getElementById('regret-value').textContent = totalRegret.toFixed(0);
+            document.getElementById('regret-value').textContent = regretPercentage.toFixed(1) + '%';
             document.getElementById('convergence-rate').textContent = convergenceRate.toFixed(1) + '%';
         }
     </script>
