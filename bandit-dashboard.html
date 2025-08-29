@@ -673,6 +673,10 @@
                     document.getElementById('variants-list').innerHTML = '';
                     addVariant('control', 1000, 70, 63);
                     addVariant('variant_a', 1000, 95, 86);
+                    
+                    // Atualizar automaticamente todos os dados
+                    await loadAllExperiments();
+                    
                     setTimeout(() => {
                         messageDiv.innerHTML = '';
                     }, 3000);
@@ -726,7 +730,9 @@
                     
                     messageDiv.innerHTML = successHtml;
                     fileInput.value = '';
-                    loadAllExperiments();
+                    
+                    // Atualizar automaticamente todos os dados
+                    await loadAllExperiments();
                 } else {
                     messageDiv.innerHTML = '<div class="alert alert-danger">❌ Erro: ' + result.detail + '</div>';
                 }
@@ -860,6 +866,8 @@
                     allExperiments = experiments;
                     updateHeaderStats(experiments);
                     loadEventsList(experiments);
+                    updateMetricCards(experiments);
+                    updateChartsWithData();
                 } else {
                     console.error('Failed to load experiments');
                 }
@@ -1693,6 +1701,224 @@
                 charts.simulationChart.data.datasets = [];
                 charts.simulationChart.update();
             }
+        }
+        
+        function updateChartsWithData() {
+            if (!allExperiments || allExperiments.length === 0) return;
+            
+            // Preparar dados para os gráficos
+            let dateData = {};
+            let variantColors = {
+                'control': '#4a90e2',
+                'variant_a': '#5cb85c', 
+                'variant_b': '#f0ad4e',
+                'variant_c': '#d9534f',
+                'variant_d': '#17a2b8'
+            };
+            
+            // Coletar dados organizados por data e variante
+            allExperiments.forEach(function(exp) {
+                if (exp.metrics && exp.metrics.length > 0) {
+                    exp.metrics.forEach(function(metric) {
+                        const date = metric.date;
+                        if (!dateData[date]) dateData[date] = {};
+                        if (!dateData[date][metric.variant_name]) {
+                            dateData[date][metric.variant_name] = {
+                                impressions: 0,
+                                clicks: 0,
+                                conversions: 0
+                            };
+                        }
+                        
+                        dateData[date][metric.variant_name].impressions += metric.impressions;
+                        dateData[date][metric.variant_name].clicks += metric.clicks;
+                        dateData[date][metric.variant_name].conversions += metric.conversions || 0;
+                    });
+                }
+            });
+            
+            // Obter datas ordenadas
+            const dates = Object.keys(dateData).sort();
+            const variants = [...new Set(allExperiments.flatMap(exp => 
+                exp.metrics ? exp.metrics.map(m => m.variant_name) : []
+            ))];
+            
+            if (dates.length === 0 || variants.length === 0) return;
+            
+            // Atualizar gráfico de CTR
+            if (charts.ctrChart) {
+                const ctrDatasets = variants.map((variant, index) => ({
+                    label: variant,
+                    data: dates.map(date => {
+                        const varData = dateData[date][variant];
+                        if (!varData) return 0;
+                        return varData.impressions > 0 ? ((varData.clicks / varData.impressions) * 100).toFixed(2) : 0;
+                    }),
+                    borderColor: variantColors[variant] || getVariantColor(index),
+                    backgroundColor: (variantColors[variant] || getVariantColor(index)) + '20',
+                    fill: false,
+                    tension: 0.1
+                }));
+                
+                charts.ctrChart.data.labels = dates;
+                charts.ctrChart.data.datasets = ctrDatasets;
+                charts.ctrChart.update();
+            }
+            
+            // Atualizar gráfico de conversão
+            if (charts.conversionChart) {
+                const conversionDatasets = variants.map((variant, index) => ({
+                    label: variant,
+                    data: dates.map(date => {
+                        const varData = dateData[date][variant];
+                        if (!varData) return 0;
+                        return varData.clicks > 0 ? ((varData.conversions / varData.clicks) * 100).toFixed(2) : 0;
+                    }),
+                    borderColor: variantColors[variant] || getVariantColor(index),
+                    backgroundColor: (variantColors[variant] || getVariantColor(index)) + '20',
+                    fill: false,
+                    tension: 0.1
+                }));
+                
+                charts.conversionChart.data.labels = dates;
+                charts.conversionChart.data.datasets = conversionDatasets;
+                charts.conversionChart.update();
+            }
+            
+            // Atualizar gráfico de performance comparativa (radar)
+            if (charts.performanceChart) {
+                const performanceDatasets = variants.map((variant, index) => {
+                    let totalImpressions = 0, totalClicks = 0, totalConversions = 0;
+                    
+                    dates.forEach(date => {
+                        const varData = dateData[date][variant];
+                        if (varData) {
+                            totalImpressions += varData.impressions;
+                            totalClicks += varData.clicks;
+                            totalConversions += varData.conversions;
+                        }
+                    });
+                    
+                    const avgCTR = totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : 0;
+                    const avgConversion = totalClicks > 0 ? (totalConversions / totalClicks) * 100 : 0;
+                    const volume = Math.min(100, (totalImpressions / 1000) * 10); // Scale volume
+                    const efficiency = Math.min(100, avgCTR * avgConversion); // Combined efficiency
+                    
+                    return {
+                        label: variant,
+                        data: [avgCTR, avgConversion, volume, efficiency],
+                        borderColor: variantColors[variant] || getVariantColor(index),
+                        backgroundColor: (variantColors[variant] || getVariantColor(index)) + '30',
+                        pointBackgroundColor: variantColors[variant] || getVariantColor(index),
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: variantColors[variant] || getVariantColor(index)
+                    };
+                });
+                
+                charts.performanceChart.data.datasets = performanceDatasets;
+                charts.performanceChart.update();
+            }
+            
+            // Atualizar gráfico de alocação (usando últimos dados disponíveis)
+            if (charts.allocationChart && variants.length > 0) {
+                // Calcular alocação baseada na performance atual
+                let totalScore = 0;
+                const scores = variants.map(variant => {
+                    let totalImpressions = 0, totalClicks = 0, totalConversions = 0;
+                    
+                    dates.forEach(date => {
+                        const varData = dateData[date][variant];
+                        if (varData) {
+                            totalImpressions += varData.impressions;
+                            totalClicks += varData.clicks;
+                            totalConversions += varData.conversions;
+                        }
+                    });
+                    
+                    const ctr = totalImpressions > 0 ? totalClicks / totalImpressions : 0;
+                    const convRate = totalClicks > 0 ? totalConversions / totalClicks : 0;
+                    const score = ctr * convRate;
+                    totalScore += score;
+                    return { variant, score };
+                });
+                
+                const allocations = scores.map(s => 
+                    totalScore > 0 ? ((s.score / totalScore) * 100).toFixed(1) : (100 / variants.length).toFixed(1)
+                );
+                
+                charts.allocationChart.data.labels = variants;
+                charts.allocationChart.data.datasets[0].data = allocations;
+                charts.allocationChart.update();
+            }
+        }
+        
+        function getVariantColor(index) {
+            const colors = ['#4a90e2', '#5cb85c', '#f0ad4e', '#d9534f', '#17a2b8', '#6f42c1', '#fd7e14'];
+            return colors[index % colors.length];
+        }
+        
+        function updateMetricCards(experiments) {
+            if (!experiments || experiments.length === 0) return;
+            
+            // Calcular melhor variante baseado no desempenho geral
+            let bestVariant = '-';
+            let bestScore = 0;
+            let totalRegret = 0;
+            let variantPerformance = {};
+            
+            experiments.forEach(function(exp) {
+                if (exp.metrics && exp.metrics.length > 0) {
+                    exp.metrics.forEach(function(metric) {
+                        if (!variantPerformance[metric.variant_name]) {
+                            variantPerformance[metric.variant_name] = {
+                                impressions: 0,
+                                clicks: 0,
+                                conversions: 0
+                            };
+                        }
+                        variantPerformance[metric.variant_name].impressions += metric.impressions;
+                        variantPerformance[metric.variant_name].clicks += metric.clicks;
+                        variantPerformance[metric.variant_name].conversions += metric.conversions || 0;
+                    });
+                }
+            });
+            
+            // Encontrar a melhor variante baseada em CTR * Taxa de Conversão
+            Object.keys(variantPerformance).forEach(function(variantName) {
+                const perf = variantPerformance[variantName];
+                const ctr = perf.impressions > 0 ? perf.clicks / perf.impressions : 0;
+                const convRate = perf.clicks > 0 ? perf.conversions / perf.clicks : 0;
+                const combinedScore = ctr * convRate;
+                
+                if (combinedScore > bestScore) {
+                    bestScore = combinedScore;
+                    bestVariant = variantName;
+                }
+            });
+            
+            // Calcular confiança estatística (aproximada)
+            const totalVariants = Object.keys(variantPerformance).length;
+            let confidence = totalVariants > 1 ? Math.min(95, 60 + (bestScore * 1000)) : 0;
+            
+            // Calcular taxa de convergência baseada na diferença entre variantes
+            let convergenceRate = 0;
+            if (totalVariants > 1) {
+                const scores = Object.values(variantPerformance).map(p => {
+                    const ctr = p.impressions > 0 ? p.clicks / p.impressions : 0;
+                    const convRate = p.clicks > 0 ? p.conversions / p.clicks : 0;
+                    return ctr * convRate;
+                });
+                const maxScore = Math.max(...scores);
+                const avgScore = scores.reduce((a, b) => a + b, 0) / scores.length;
+                convergenceRate = maxScore > 0 ? (avgScore / maxScore) * 100 : 0;
+            }
+            
+            // Atualizar os cards
+            document.getElementById('best-variant').textContent = bestVariant;
+            document.getElementById('confidence-level').textContent = confidence.toFixed(1) + '%';
+            document.getElementById('regret-value').textContent = totalRegret.toFixed(0);
+            document.getElementById('convergence-rate').textContent = convergenceRate.toFixed(1) + '%';
         }
     </script>
 </body>
