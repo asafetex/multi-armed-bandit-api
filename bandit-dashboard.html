@@ -478,7 +478,8 @@
     </div>
     
     <script>
-        const API_URL = '';
+        // Auto-detect API URL based on environment
+        const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:8080' : '';
         let charts = {};
         let allExperiments = [];
         let currentExperimentData = null;

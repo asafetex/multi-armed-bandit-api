@@ -81,6 +81,21 @@ class VariantAllocation(BaseModel):
     impressions: int
     clicks: int
 
+class AllocationSummary(BaseModel):
+    """Schema for allocation summary data"""
+    total_impressions: int
+    total_clicks: int
+    variants: List[VariantData]
+
+class AllocationHistory(BaseModel):
+    """Schema for allocation history entry"""
+    date: str
+    allocations: Dict[str, float]
+    algorithm: str
+    window_days: int
+    total_impressions: int
+    total_clicks: int
+
 class AllocationResponse(BaseModel):
     """Schema for allocation calculation response"""
     allocations: Dict[str, float]
@@ -89,3 +104,5 @@ class AllocationResponse(BaseModel):
     experiment_id: int
     window_days: int
     timestamp: str
+    summary: AllocationSummary
+    history: List[AllocationHistory]
